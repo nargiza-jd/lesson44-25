@@ -31,6 +31,11 @@ public class Lesson44Server extends BasicServer {
             renderTemplate(exchange, "books.ftl", data);
         });
 
+        registerGet("/login", exchange -> {
+            Map<String, Object> data = new HashMap<>();
+            renderTemplate(exchange, "login.ftlh", data);
+        });
+
         registerGet("/book", exchange -> {
             String query = exchange.getRequestURI().getQuery();
             String id = getQueryParam(query, "id");
