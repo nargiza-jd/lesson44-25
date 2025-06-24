@@ -33,7 +33,31 @@ public class Lesson44Server extends BasicServer {
 
         registerGet("/login", exchange -> {
             Map<String, Object> data = new HashMap<>();
-            renderTemplate(exchange, "login.ftlh", data);
+            renderTemplate(exchange, "login.ftl", data);
+        });
+
+        registerPost("/login", exchange -> {
+            String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+
+            String login = "", password = "";
+            for (String param : body.split("&")) {
+                String[] pair = param.split("=");
+                if (pair.length == 2) {
+                    if (pair[0].equals("login")) {
+                        login = pair[1];
+                    } else if (pair[0].equals("password")) {
+                        password = pair[1];
+                    }
+                }
+            }
+
+            if (login.equals("one@one.one") && password.equals("123")) {
+                exchange.getResponseHeaders().add("Location", "/books");
+                exchange.sendResponseHeaders(302, -1);
+            } else {
+                exchange.getResponseHeaders().add("Location", "/login");
+                exchange.sendResponseHeaders(302, -1);
+            }
         });
 
         registerGet("/book", exchange -> {
@@ -64,7 +88,7 @@ public class Lesson44Server extends BasicServer {
 
             if (emp != null) {
                 data.put("employee", emp);
-                renderTemplate(exchange, "employee.ftlh", data);
+                renderTemplate(exchange, "employee.ftl", data);
             } else {
                 sendText(exchange, "Сотрудник не найден");
             }

@@ -1,6 +1,7 @@
 package kg.attractor.java.server;
 
 import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
@@ -123,6 +124,16 @@ public abstract class BasicServer {
     private void handleIncomingServerRequests(HttpExchange exchange) {
         var route = getRoutes().getOrDefault(makeKey(exchange), this::respond404);
         route.handle(exchange);
+    }
+
+    protected void registerPost(String path, HttpHandler handler) {
+        server.createContext(path, exchange -> {
+            if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handler.handle(exchange);
+            } else {
+                exchange.sendResponseHeaders(405, -1); // Method Not Allowed
+            }
+        });
     }
 
     public final void start() {
