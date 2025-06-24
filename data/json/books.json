@@ -1,0 +1,53 @@
+[
+  {
+    "id": "1",
+    "title": "Clean Code",
+    "author": "Robert Martin",
+    "image": "clean_code.jpg",
+    "status": "AVAILABLE",
+    "issuedTo": null
+  },
+  {
+    "id": "2",
+    "title": "Effective Java",
+    "author": "Joshua Bloch",
+    "image": "effective_java.jpg",
+    "status": "ISSUED",
+    "issuedTo": "1"
+  },
+  {
+    "id": "3",
+    "title": "Java Concurrency in Practice",
+    "author": "Brian Goetz",
+    "image": "concurrency.jpg",
+    "status": "AVAILABLE",
+    "issuedTo": null
+  },
+  {
+    "id": "4",
+    "title": "Head First Java",
+    "author": "Kathy Sierra",
+    "image": "head_first.jpg",
+    "status": "ISSUED",
+    "issuedTo": "2"
+  },
+  {
+    "id": "5",
+    "title": "Spring in Action",
+    "author": "Craig Walls",
+    "image": "spring_in_action.jpg",
+    "status": "AVAILABLE",
+    "issuedTo": null
+  },
+  {
+    "id": "6",
+    "title": "Java: The Complete Reference",
+    "author": "Herbert Schildt",
+    "image": "reference.jpg",
+    "status": "AVAILABLE",
+    "issuedTo": null
+  }
+]
+
+
+

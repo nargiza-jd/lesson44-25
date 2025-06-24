@@ -3,7 +3,7 @@
 <p><strong>Имя:</strong> ${employee.firstName} ${employee.lastName}</p>
 <p><strong>Взятые книги:</strong></p>
 <ul>
-<#list employee.borrowedBooks as bookId>
+<#list employee.issuedBookIds as bookId>
     <li>ID книги: ${bookId}</li>
 </#list>
 </ul>

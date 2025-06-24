@@ -131,7 +131,7 @@ public abstract class BasicServer {
             if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
                 handler.handle(exchange);
             } else {
-                exchange.sendResponseHeaders(405, -1); // Method Not Allowed
+                exchange.sendResponseHeaders(405, -1);
             }
         });
     }

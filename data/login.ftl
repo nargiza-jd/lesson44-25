@@ -6,10 +6,15 @@
 </head>
 <body>
 <h1>Вход</h1>
+
 <form method="post" action="/login">
     <label>Логин: <input type="text" name="login"/></label><br>
     <label>Пароль: <input type="password" name="password"/></label><br>
     <button type="submit">Войти</button>
 </form>
+<#if user??>
+    <h2>Добро пожаловать, ${user.firstName}!</h2>
+</#if>
+
 </body>
 </html>

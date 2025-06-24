@@ -17,6 +17,7 @@ import java.util.Map;
 
 public class Lesson44Server extends BasicServer {
     private final static Configuration freemarker = initFreeMarker();
+    private boolean isLoggedIn = false;
 
     public Lesson44Server(String host, int port) throws IOException {
         super(host, port);
@@ -28,12 +29,14 @@ public class Lesson44Server extends BasicServer {
         registerGet("/books", exchange -> {
             Map<String, Object> data = new HashMap<>();
             data.put("books", SampleDataModel.getBooks());
+            data.put("user", new SampleDataModel().getUser());
             renderTemplate(exchange, "books.ftl", data);
         });
 
         registerGet("/login", exchange -> {
             Map<String, Object> data = new HashMap<>();
-            renderTemplate(exchange, "login.ftl", data);
+            data.put("user", new SampleDataModel().getUser());
+            renderTemplate(exchange, "login.ftlh", data);
         });
 
         registerPost("/login", exchange -> {
