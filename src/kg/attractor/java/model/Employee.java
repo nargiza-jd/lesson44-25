@@ -1,59 +1,49 @@
 package kg.attractor.java.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Employee {
     private String id;
-    private String name;
-    private List<String> currentBooks;
-    private List<String> pastBooks;
+    private String firstName;
+    private String lastName;
+    private List<String> issuedBookIds;
 
-    public Employee(String id, String name) {
+    public Employee(String id, String firstName, String lastName, List<String> issuedBookIds) {
         this.id = id;
-        this.name = name;
-        this.currentBooks = new ArrayList<>();
-        this.pastBooks = new ArrayList<>();
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.issuedBookIds = issuedBookIds;
     }
 
     public String getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public List<String> getCurrentBooks() {
-        return currentBooks;
+    public String getLastName() {
+        return lastName;
     }
 
-    public List<String> getPastBooks() {
-        return pastBooks;
+    public List<String> getIssuedBookIds() {
+        return issuedBookIds;
     }
 
     public void setId(String id) {
         this.id = id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public void setCurrentBooks(List<String> currentBooks) {
-        this.currentBooks = currentBooks;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
-    public void setPastBooks(List<String> pastBooks) {
-        this.pastBooks = pastBooks;
-    }
-
-    public void addCurrentBook(String bookId) {
-        currentBooks.add(bookId);
-    }
-
-    public void returnBook(String bookId) {
-        currentBooks.remove(bookId);
-        pastBooks.add(bookId);
+    public void setIssuedBookIds(List<String> issuedBookIds) {
+        this.issuedBookIds = issuedBookIds;
     }
 }

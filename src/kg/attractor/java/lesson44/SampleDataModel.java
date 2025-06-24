@@ -2,6 +2,7 @@ package kg.attractor.java.lesson44;
 
 import kg.attractor.java.model.Book;
 import kg.attractor.java.model.BookStatus;
+import kg.attractor.java.model.Employee;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +14,14 @@ public class SampleDataModel {
     private List<User> customers = new ArrayList<>();
 
     private static final List<Book> books = new ArrayList<>();
+
+    private static final List<Employee> employees = new ArrayList<>();
+
+    static {
+        employees.add(new Employee("1", "John", "Doe", List.of("2")));
+        employees.add(new Employee("2", "Anna", "Smith", List.of("4")));
+        employees.add(new Employee("3", "Tom", "Brown", List.of()));
+    }
 
     static {
         books.add(new Book("1", "Clean Code", "Robert Martin", "clean_code.jpg", BookStatus.AVAILABLE, null));
@@ -30,6 +39,14 @@ public class SampleDataModel {
         customers.get(1).setEmailConfirmed(true);
     }
 
+    public static Employee getEmployeeById(String id) {
+        for (Employee employee : employees) {
+            if (employee.getId().equals(id)) {
+                return employee;
+            }
+        }
+        return null;
+    }
     public User getUser() {
         return user;
     }

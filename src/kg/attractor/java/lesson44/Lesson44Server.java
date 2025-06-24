@@ -5,11 +5,13 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
+import kg.attractor.java.model.Employee;
 import kg.attractor.java.server.BasicServer;
 import kg.attractor.java.server.ContentType;
 import kg.attractor.java.server.ResponseCodes;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +49,34 @@ public class Lesson44Server extends BasicServer {
             data.put("book", book);
             renderTemplate(exchange, "book.ftl", data);
         });
+
+        registerGet("/employee", exchange -> {
+            String query = exchange.getRequestURI().getQuery();
+            String id = getQueryParam(query, "id");
+            Employee emp = SampleDataModel.getEmployeeById(id);
+
+            Map<String, Object> data = new HashMap<>();
+
+            if (emp != null) {
+                data.put("employee", emp);
+                renderTemplate(exchange, "employee.ftlh", data);
+            } else {
+                sendText(exchange, "Сотрудник не найден");
+            }
+        });
+    }
+
+    private void sendText(HttpExchange exchange, String responseText) {
+        try {
+            byte[] responseBytes = responseText.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
+            exchange.sendResponseHeaders(200, responseBytes.length);
+            OutputStream os = exchange.getResponseBody();
+            os.write(responseBytes);
+            os.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private String getQueryParam(String query, String key) {
