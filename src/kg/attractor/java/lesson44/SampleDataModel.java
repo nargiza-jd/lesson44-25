@@ -1,5 +1,8 @@
 package kg.attractor.java.lesson44;
 
+import kg.attractor.java.model.Book;
+import kg.attractor.java.model.BookStatus;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +11,17 @@ public class SampleDataModel {
     private User user = new User("John", "Doe");
     private LocalDateTime currentDateTime = LocalDateTime.now();
     private List<User> customers = new ArrayList<>();
+
+    private static final List<Book> books = new ArrayList<>();
+
+    static {
+        books.add(new Book("1", "Clean Code", "Robert Martin", "clean_code.jpg", BookStatus.AVAILABLE, null));
+        books.add(new Book("2", "Effective Java", "Joshua Bloch", "effective_java.jpg", BookStatus.ISSUED, "1"));
+        books.add(new Book("3", "Java Concurrency in Practice", "Brian Goetz", "concurrency.jpg", BookStatus.AVAILABLE, null));
+        books.add(new Book("4", "Head First Java", "Kathy Sierra", "head_first.jpg", BookStatus.ISSUED, "2"));
+        books.add(new Book("5", "Spring in Action", "Craig Walls", "spring_in_action.jpg", BookStatus.AVAILABLE, null));
+        books.add(new Book("6", "Java: The Complete Reference", "Herbert Schildt", "reference.jpg", BookStatus.AVAILABLE, null));
+    }
 
     public SampleDataModel() {
         customers.add(new User("Marco"));
@@ -40,6 +54,19 @@ public class SampleDataModel {
         this.customers = customers;
     }
 
+    public static List<Book> getBooks() {
+        return books;
+    }
+
+    public static Book getBookById(String id) {
+        for (Book book : books) {
+            if (book.getId().equals(id)) {
+                return book;
+            }
+        }
+        return null;
+    }
+
     public static class User {
         private String firstName;
         private String lastName;
@@ -59,7 +86,7 @@ public class SampleDataModel {
             this.firstName = firstName;
             this.lastName = lastName;
             this.middleName = middleName;
-            this.email = firstName+"@test.mail";
+            this.email = firstName + "@test.mail";
         }
 
         public String getFirstName() {

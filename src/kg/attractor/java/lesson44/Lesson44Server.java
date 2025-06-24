@@ -19,6 +19,45 @@ public class Lesson44Server extends BasicServer {
     public Lesson44Server(String host, int port) throws IOException {
         super(host, port);
         registerGet("/sample", this::freemarkerSampleHandler);
+        initRoutes();
+    }
+
+    private void initRoutes() {
+        registerGet("/books", exchange -> {
+            Map<String, Object> data = new HashMap<>();
+            data.put("books", SampleDataModel.getBooks());
+            renderTemplate(exchange, "books.ftl", data);
+        });
+
+        registerGet("/book", exchange -> {
+            String query = exchange.getRequestURI().getQuery();
+            String id = getQueryParam(query, "id");
+            var book = SampleDataModel.getBookById(id);
+
+            if (book == null) {
+                try {
+                    sendByteData(exchange, ResponseCodes.NOT_FOUND, ContentType.TEXT_HTML, "Книга не найдена".getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return;
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("book", book);
+            renderTemplate(exchange, "book.ftl", data);
+        });
+    }
+
+    private String getQueryParam(String query, String key) {
+        if (query == null) return null;
+        for (String param : query.split("&")) {
+            String[] pair = param.split("=");
+            if (pair.length == 2 && pair[0].equals(key)) {
+                return pair[1];
+            }
+        }
+        return null;
     }
 
     private static Configuration initFreeMarker() {
@@ -89,4 +128,6 @@ public class Lesson44Server extends BasicServer {
         data.put("currentDateTime", sdm.getCurrentDateTime());
         return data;
     }
+
+
 }
