@@ -1,13 +1,46 @@
 package kg.attractor.java.lesson44;
 
+import kg.attractor.java.model.Book;
+import kg.attractor.java.model.BookStatus;
+import kg.attractor.java.model.Employee;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Type;
+
+
 
 public class SampleDataModel {
     private User user = new User("John", "Doe");
     private LocalDateTime currentDateTime = LocalDateTime.now();
     private List<User> customers = new ArrayList<>();
+
+
+    private static final List<Book> books = loadBooksFromJson();
+    private static final List<Employee> employees = loadEmployeesFromJson();
+
+    public static List<Employee> getEmployees() {
+        return employees;
+    }
+
+
+    public static List<Employee> loadEmployeesFromJson() {
+        Gson gson = new Gson();
+        try (FileReader reader = new FileReader("data/json/employees.json")) {
+            Type empListType = new TypeToken<List<Employee>>() {}.getType();
+            return gson.fromJson(reader, empListType);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
 
     public SampleDataModel() {
         customers.add(new User("Marco"));
@@ -16,6 +49,14 @@ public class SampleDataModel {
         customers.get(1).setEmailConfirmed(true);
     }
 
+    public static Employee getEmployeeById(String id) {
+        for (Employee employee : employees) {
+            if (employee.getId().equals(id)) {
+                return employee;
+            }
+        }
+        return null;
+    }
     public User getUser() {
         return user;
     }
@@ -40,6 +81,30 @@ public class SampleDataModel {
         this.customers = customers;
     }
 
+    public static List<Book> getBooks() {
+        return books;
+    }
+
+    public static Book getBookById(String id) {
+        for (Book book : books) {
+            if (book.getId().equals(id)) {
+                return book;
+            }
+        }
+        return null;
+    }
+
+    public static List<Book> loadBooksFromJson() {
+        Gson gson = new Gson();
+        try (FileReader reader = new FileReader("data/json/books.json")) {
+            Type bookListType = new TypeToken<List<Book>>() {}.getType();
+            return gson.fromJson(reader, bookListType);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
     public static class User {
         private String firstName;
         private String lastName;
@@ -59,7 +124,7 @@ public class SampleDataModel {
             this.firstName = firstName;
             this.lastName = lastName;
             this.middleName = middleName;
-            this.email = firstName+"@test.mail";
+            this.email = firstName + "@test.mail";
         }
 
         public String getFirstName() {
@@ -102,4 +167,8 @@ public class SampleDataModel {
             this.email = email;
         }
     }
+
+
+
+
 }
