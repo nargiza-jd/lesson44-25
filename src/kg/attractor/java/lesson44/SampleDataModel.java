@@ -8,28 +8,38 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Type;
+
+
+
 public class SampleDataModel {
     private User user = new User("John", "Doe");
     private LocalDateTime currentDateTime = LocalDateTime.now();
     private List<User> customers = new ArrayList<>();
 
-    private static final List<Book> books = new ArrayList<>();
 
-    private static final List<Employee> employees = new ArrayList<>();
+    private static final List<Book> books = loadBooksFromJson();
+    private static final List<Employee> employees = loadEmployeesFromJson();
 
-    static {
-        employees.add(new Employee("1", "John", "Doe", List.of("2")));
-        employees.add(new Employee("2", "Anna", "Smith", List.of("4")));
-        employees.add(new Employee("3", "Tom", "Brown", List.of()));
+    public static List<Employee> getEmployees() {
+        return employees;
     }
 
-    static {
-        books.add(new Book("1", "Clean Code", "Robert Martin", "clean_code.jpg", BookStatus.AVAILABLE, null));
-        books.add(new Book("2", "Effective Java", "Joshua Bloch", "effective_java.jpg", BookStatus.ISSUED, "1"));
-        books.add(new Book("3", "Java Concurrency in Practice", "Brian Goetz", "concurrency.jpg", BookStatus.AVAILABLE, null));
-        books.add(new Book("4", "Head First Java", "Kathy Sierra", "head_first.jpg", BookStatus.ISSUED, "2"));
-        books.add(new Book("5", "Spring in Action", "Craig Walls", "spring_in_action.jpg", BookStatus.AVAILABLE, null));
-        books.add(new Book("6", "Java: The Complete Reference", "Herbert Schildt", "reference.jpg", BookStatus.AVAILABLE, null));
+
+    public static List<Employee> loadEmployeesFromJson() {
+        Gson gson = new Gson();
+        try (FileReader reader = new FileReader("data/json/employees.json")) {
+            Type empListType = new TypeToken<List<Employee>>() {}.getType();
+            return gson.fromJson(reader, empListType);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     public SampleDataModel() {
@@ -82,6 +92,17 @@ public class SampleDataModel {
             }
         }
         return null;
+    }
+
+    public static List<Book> loadBooksFromJson() {
+        Gson gson = new Gson();
+        try (FileReader reader = new FileReader("data/json/books.json")) {
+            Type bookListType = new TypeToken<List<Book>>() {}.getType();
+            return gson.fromJson(reader, bookListType);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     public static class User {
@@ -146,4 +167,8 @@ public class SampleDataModel {
             this.email = email;
         }
     }
+
+
+
+
 }

@@ -19,6 +19,8 @@ public class Lesson44Server extends BasicServer {
     private final static Configuration freemarker = initFreeMarker();
     private boolean isLoggedIn = false;
 
+    private static final String LOGIN_PATH = "/login";
+
     public Lesson44Server(String host, int port) throws IOException {
         super(host, port);
         registerGet("/sample", this::freemarkerSampleHandler);
@@ -33,34 +35,36 @@ public class Lesson44Server extends BasicServer {
             renderTemplate(exchange, "books.ftl", data);
         });
 
-        registerGet("/login", exchange -> {
-            Map<String, Object> data = new HashMap<>();
-            data.put("user", new SampleDataModel().getUser());
-            renderTemplate(exchange, "login.ftlh", data);
-        });
+        registerAny(LOGIN_PATH, exchange -> {
+            if ("GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("user", new SampleDataModel().getUser());
+                renderTemplate(exchange, "login.ftl", data);
+                return;
+            }
 
-        registerPost("/login", exchange -> {
-            String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+                String login = "", password = "";
 
-            String login = "", password = "";
-            for (String param : body.split("&")) {
-                String[] pair = param.split("=");
-                if (pair.length == 2) {
-                    if (pair[0].equals("login")) {
-                        login = pair[1];
-                    } else if (pair[0].equals("password")) {
-                        password = pair[1];
+                for (String p : body.split("&")) {
+                    String[] kv = p.split("=");
+                    if (kv.length == 2) {
+                        String key = java.net.URLDecoder.decode(kv[0], StandardCharsets.UTF_8);
+                        String value = java.net.URLDecoder.decode(kv[1], StandardCharsets.UTF_8);
+
+                        if ("login".equals(key)) login = value;
+                        if ("password".equals(key)) password = value;
                     }
                 }
+
+                boolean ok = "one@one.one".equals(login) && "123".equals(password);
+                exchange.getResponseHeaders().add("Location", ok ? "/books" : LOGIN_PATH);
+                exchange.sendResponseHeaders(302, -1);
+                return;
             }
 
-            if (login.equals("one@one.one") && password.equals("123")) {
-                exchange.getResponseHeaders().add("Location", "/books");
-                exchange.sendResponseHeaders(302, -1);
-            } else {
-                exchange.getResponseHeaders().add("Location", "/login");
-                exchange.sendResponseHeaders(302, -1);
-            }
+            exchange.sendResponseHeaders(405, -1);
         });
 
         registerGet("/book", exchange -> {
@@ -95,6 +99,12 @@ public class Lesson44Server extends BasicServer {
             } else {
                 sendText(exchange, "Сотрудник не найден");
             }
+        });
+
+        registerGet("/employees", exchange -> {
+            Map<String, Object> data = new HashMap<>();
+            data.put("employees", SampleDataModel.getEmployees());
+            renderTemplate(exchange, "employees.ftl", data);
         });
     }
 

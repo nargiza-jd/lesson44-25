@@ -121,7 +121,7 @@ public abstract class BasicServer {
         }
     }
 
-    private void handleIncomingServerRequests(HttpExchange exchange) {
+    private void handleIncomingServerRequests(HttpExchange exchange) throws IOException {
         var route = getRoutes().getOrDefault(makeKey(exchange), this::respond404);
         route.handle(exchange);
     }
@@ -139,4 +139,12 @@ public abstract class BasicServer {
     public final void start() {
         server.start();
     }
+
+    protected void registerAny(String route, RouteHandler handler) {
+        server.createContext(route, exchange -> {
+            handler.handle(exchange);
+        });
+    }
+
+
 }

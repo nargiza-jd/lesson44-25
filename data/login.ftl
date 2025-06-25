@@ -12,6 +12,7 @@
     <label>Пароль: <input type="password" name="password"/></label><br>
     <button type="submit">Войти</button>
 </form>
+
 <#if user??>
     <h2>Добро пожаловать, ${user.firstName}!</h2>
 </#if>
