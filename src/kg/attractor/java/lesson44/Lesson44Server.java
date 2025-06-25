@@ -5,6 +5,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
+import kg.attractor.java.model.Book;
 import kg.attractor.java.model.Employee;
 import kg.attractor.java.server.BasicServer;
 import kg.attractor.java.server.ContentType;
@@ -13,6 +14,7 @@ import kg.attractor.java.server.ResponseCodes;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Lesson44Server extends BasicServer {
@@ -94,7 +96,11 @@ public class Lesson44Server extends BasicServer {
             Map<String, Object> data = new HashMap<>();
 
             if (emp != null) {
+                List<Book> issuedBooks = SampleDataModel.getBooks().stream()
+                        .filter(b -> emp.getIssuedBookIds().contains(b.getId()))
+                        .toList();
                 data.put("employee", emp);
+                data.put("books", issuedBooks);
                 renderTemplate(exchange, "employee.ftl", data);
             } else {
                 sendText(exchange, "Сотрудник не найден");
