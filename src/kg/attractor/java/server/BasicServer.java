@@ -4,12 +4,19 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class BasicServer {
 
@@ -71,6 +78,10 @@ public abstract class BasicServer {
 
     protected final void registerGet(String route, RouteHandler handler) {
         getRoutes().put("GET " + route, handler);
+    }
+
+    protected final void registerPost(String route, RouteHandler handler) {
+        getRoutes().put("Post " + route, handler);
     }
 
     protected final void registerFileHandler(String fileExt, ContentType type) {
@@ -144,6 +155,23 @@ public abstract class BasicServer {
         server.createContext(route, exchange -> {
             handler.handle(exchange);
         });
+    }
+
+    protected String getContentType(HttpExchange exchange) {
+        return exchange.getResponseHeaders().getOrDefault("Content-Type", List.of("")).get(0);
+    }
+
+    protected String getBody(HttpExchange exchange) {
+        InputStream in = exchange.getRequestBody();
+        Charset utf8 = StandardCharsets.UTF_8;
+        InputStreamReader isr = new InputStreamReader(in, utf8);
+
+        try (BufferedReader reader = new BufferedReader(isr)) {
+            return reader.lines().collect(Collectors.joining(""));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
 

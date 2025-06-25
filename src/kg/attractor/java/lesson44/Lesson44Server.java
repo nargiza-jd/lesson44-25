@@ -37,37 +37,37 @@ public class Lesson44Server extends BasicServer {
             renderTemplate(exchange, "books.ftl", data);
         });
 
-        registerAny(LOGIN_PATH, exchange -> {
-            if ("GET".equalsIgnoreCase(exchange.getRequestMethod())) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("user", new SampleDataModel().getUser());
-                renderTemplate(exchange, "login.ftl", data);
-                return;
-            }
-
-            if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-                String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-                String login = "", password = "";
-
-                for (String p : body.split("&")) {
-                    String[] kv = p.split("=");
-                    if (kv.length == 2) {
-                        String key = java.net.URLDecoder.decode(kv[0], StandardCharsets.UTF_8);
-                        String value = java.net.URLDecoder.decode(kv[1], StandardCharsets.UTF_8);
-
-                        if ("login".equals(key)) login = value;
-                        if ("password".equals(key)) password = value;
-                    }
-                }
-
-                boolean ok = "one@one.one".equals(login) && "123".equals(password);
-                exchange.getResponseHeaders().add("Location", ok ? "/books" : LOGIN_PATH);
-                exchange.sendResponseHeaders(302, -1);
-                return;
-            }
-
-            exchange.sendResponseHeaders(405, -1);
-        });
+//        registerAny(LOGIN_PATH, exchange -> {
+//            if ("GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+//                Map<String, Object> data = new HashMap<>();
+//                data.put("user", new SampleDataModel().getUser());
+//                renderTemplate(exchange, "login.ftlh", data);
+//                return;
+//            }
+//
+//            if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+//                String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+//                String login = "", password = "";
+//
+//                for (String p : body.split("&")) {
+//                    String[] kv = p.split("=");
+//                    if (kv.length == 2) {
+//                        String key = java.net.URLDecoder.decode(kv[0], StandardCharsets.UTF_8);
+//                        String value = java.net.URLDecoder.decode(kv[1], StandardCharsets.UTF_8);
+//
+//                        if ("login".equals(key)) login = value;
+//                        if ("password".equals(key)) password = value;
+//                    }
+//                }
+//
+//                boolean ok = "one@one.one".equals(login) && "123".equals(password);
+//                exchange.getResponseHeaders().add("Location", ok ? "/books" : LOGIN_PATH);
+//                exchange.sendResponseHeaders(302, -1);
+//                return;
+//            }
+//
+//            exchange.sendResponseHeaders(405, -1);
+//        });
 
         registerGet("/book", exchange -> {
             String query = exchange.getRequestURI().getQuery();
