@@ -12,79 +12,67 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Lesson45Server extends Lesson44Server {
+
     public Lesson45Server(String host, int port) throws IOException {
         super(host, port);
 
-        registerGet("/", exchange -> redirect303(exchange, "auth/login"));
+        registerGet("/", ex -> redirect303(ex, "/auth/login"));
 
-
-        registerGet("/auth/login", this::loginGet);
+        registerGet ("/auth/login", this::loginGet);
         registerPost("/auth/login", this::loginPost);
 
+        registerGet("/books", ex -> {
+            String html = "<h1>Добро пожаловать в библиотеку!</h1>";
+            try {
+                sendByteData(ex,
+                        ResponseCodes.OK,
+                        ContentType.TEXT_HTML,
+                        html.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException ignored) {}
+        });
     }
 
     private final Map<String, String> users = Map.of(
-            "test@example.com", "1234",
-            "admin@mail.com", "admin"
+            "test@example.com",  "1234",
+            "admin@mail.com",    "admin"
     );
 
-    private void loginPost(HttpExchange exchange) {
-        String raw = body(exchange);
-        Map<String, String> form = parseFormData(raw);
+    private void loginPost(HttpExchange ex) {
+        Map<String,String> form = parseFormData(body(ex));
 
-        String email = form.get("email");
+        String email    = form.get("email");
         String password = form.get("password");
 
-        String message;
-
         if (users.containsKey(email) && users.get(email).equals(password)) {
-            message = "<h2>Добро пожаловать, " + email + "!</h2>";
+
+            redirect303(ex, "/books");
         } else {
-            message = "<h2 style='color:red'>Неверный email или пароль!</h2>";
+
+            redirect303(ex, "/auth/login?error=1");
         }
-
-        try {
-            sendByteData(exchange, ResponseCodes.OK, ContentType.TEXT_HTML, message.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-//        String cType = exchange.getRequestHeaders()
-//                .getOrDefault("Content-Type", List.of())
-//                .get(0);
-//
-//        String raw = getBody(exchange);
-//
-//        Map<String, String> parsed = Utils.parseUrlEncoded(raw, "&");
-//        String fmt = "<p>Необработанные данные: <b>%s</b></p>" +
-//                "<p>Content-Type: <b>%s</b></p>" +
-//                "<p>После обработки: <b>%s</b></p>";
-//        String data = String.format(fmt, raw, cType, parsed);
-//
-//        try{
-//            sendByteData(exchange, ResponseCodes.OK, ContentType.TEXT_HTML, data.getBytes());
-//        } catch (IOException e){
-//            e.printStackTrace();
-//        }
     }
 
-    private void loginGet(HttpExchange exchange) throws IOException {
-        Path path = makePath("auth", "login.ftlh");
-        sendFile(exchange, path, ContentType.TEXT_HTML);
-    }
+    private void loginGet(HttpExchange ex)  {
+        Map<String,Object> data = new HashMap<>();
 
+        String q = ex.getRequestURI().getQuery();
+        if (q != null && q.contains("error=1")) {
+            data.put("error", "Неверный email или пароль");
+        }
+
+        renderTemplate(ex, "auth/login.ftlh", data);
+    }
 
     private Map<String, String> parseFormData(String raw) {
-        Map<String, String> result = new HashMap<>();
+        Map<String,String> res = new HashMap<>();
         for (String pair : raw.split("&")) {
-            String[] keyValue = pair.split("=", 2);
-            if (keyValue.length == 2) {
-                String key = java.net.URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8);
-                String value = java.net.URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8);
-                result.put(key, value);
+            String[] kv = pair.split("=", 2);
+            if (kv.length == 2) {
+                String k = java.net.URLDecoder.decode(kv[0], StandardCharsets.UTF_8);
+                String v = java.net.URLDecoder.decode(kv[1], StandardCharsets.UTF_8);
+                res.put(k, v);
             }
         }
-        return result;
+        return res;
     }
 }
