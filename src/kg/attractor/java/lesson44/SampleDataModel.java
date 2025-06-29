@@ -4,12 +4,14 @@ import kg.attractor.java.model.Book;
 import kg.attractor.java.model.BookStatus;
 import kg.attractor.java.model.Employee;
 
+import java.io.FileWriter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import kg.attractor.java.model.EmployeeAuth;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -169,6 +171,23 @@ public class SampleDataModel {
     }
 
 
+    private static final List<EmployeeAuth> auth =
+            loadAuth();
+
+    public static List<EmployeeAuth> getAuth(){ return auth; }
+
+    private static List<EmployeeAuth> loadAuth(){
+        try(FileReader r=new FileReader("data/json/auth.json")){
+            return new Gson().fromJson(r,
+                    new TypeToken<List<EmployeeAuth>>(){}.getType());
+        }catch(IOException e){return new ArrayList<>();}
+    }
+
+    public static void saveAuth() {
+        try(FileWriter w = new FileWriter("data/json/auth.json")){
+            new Gson().toJson(auth,w);
+        }catch(IOException ignored){}
+    }
 
 
 }
