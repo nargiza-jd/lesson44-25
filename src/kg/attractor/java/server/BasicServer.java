@@ -132,6 +132,16 @@ public abstract class BasicServer {
         }
     }
 
+    protected void redirect303(HttpExchange exchange, String path) {
+        try {
+            exchange.getResponseHeaders().add("Location", path);
+            exchange.sendResponseHeaders(ResponseCodes.REDIRECT_303.getCode(), 0);
+            exchange.getResponseBody().close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void handleIncomingServerRequests(HttpExchange exchange) throws IOException {
         var route = getRoutes().getOrDefault(makeKey(exchange), this::respond404);
         route.handle(exchange);
