@@ -1,55 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Login form</title>
-
-    <link rel="stylesheet" href="/css/forms.css">
+    <title>Вход в библиотеку</title>
+    <link rel="stylesheet" href="/static/css/forms.css">
 </head>
-
 <body>
 <main>
-
     <form action="/auth/login" method="post">
         <fieldset>
-            <legend class="legend">
-                <p>Welcome!</p>
-                <img src="/images/1.jpg" alt="Java logo" style="display:block; width:200px; height:200px;">
-            </legend>
-
-            <div class="form-element">
-                <label for="user-email">e-mail</label>
-                <input type="email"
-                       name="email"
-                       id="user-email"
-                       placeholder="your email"
-                       required
-                       autofocus>
+            <div class="legend">
+                <p>Добро пожаловать!</p>
+                <img src="/static/images/1.jpg" alt="logo" width="150">
             </div>
-
             <div class="form-element">
-                <label for="user-password">password</label>
-
-                <input type="password"
-                       name="password"
-                       id="user-password"
-                       placeholder="your password"
-                       required>
+                <label for="email">E-mail</label>
+                <input type="email" name="email" id="email" placeholder="Введите email" required>
             </div>
-
-            <div class="hr-line">
-                <span class="details">one more step to go</span>
-            </div>
-
             <div class="form-element">
-                <button class="register-button" type="submit">Login!</button>
+                <label for="password">Пароль</label>
+                <input type="password" name="password" id="password" placeholder="Введите пароль" required>
+            </div>
+            <div class="form-element">
+                <button type="submit">Войти</button>
             </div>
         </fieldset>
     </form>
 
     <#if error??>
-        <p style="color:red">${error}</p>
+        <p style="color: red;">${error}</p>
     </#if>
+
+    <#if success??>
+        <p style="color:green;">${success}</p>
+    </#if>
+
+    <p>Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
 </main>
 </body>
 </html>

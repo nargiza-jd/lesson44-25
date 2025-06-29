@@ -6,7 +6,7 @@
 </head>
 <body>
     <h2>Регистрация нового сотрудника</h2>
-
+    <img src="/static/images/1.jpg" alt="logo" width="150">
     <form action="/register" method="post">
         <label>Email:
             <input type="email" name="email" required>
