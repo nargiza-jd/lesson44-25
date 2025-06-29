@@ -13,6 +13,7 @@ import kg.attractor.java.server.ResponseCodes;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -147,5 +148,9 @@ public class Lesson44Server extends BasicServer {
         data.put("customers", sdm.getCustomers());
         data.put("currentDateTime", sdm.getCurrentDateTime());
         return data;
+    }
+
+    protected Path makeFilePath(String... parts) {
+        return Path.of("data", parts);
     }
 }

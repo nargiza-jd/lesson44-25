@@ -2,40 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Registration</title>
-    <link rel="stylesheet" href="/css/forms.css">
+    <title>Регистрация</title>
 </head>
 <body>
-<main>
+    <h2>Регистрация нового сотрудника</h2>
 
-    <#if message??>
-        <p style="color:red;">${message}</p>
+    <form action="/register" method="post">
+        <label>Email:
+            <input type="email" name="email" required>
+        </label><br>
+
+        <label>ФИО:
+            <input type="text" name="fullname" required>
+        </label><br>
+
+        <label>Пароль:
+            <input type="password" name="password" required>
+        </label><br>
+
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+
+    <#if error??>
+        <p style="color:red;">Ошибка: пользователь уже существует.</p>
     </#if>
-
-    <#if !user??>
-        <form action="/register" method="post">
-            <fieldset>
-                <legend>New employee</legend>
-
-                <label>e-mail
-                    <input type="email" name="email" required autofocus>
-                </label>
-
-                <label>full name
-                    <input type="text" name="fullname" required>
-                </label>
-
-                <label>password
-                    <input type="password" name="password" required>
-                </label>
-
-                <button type="submit">Register</button>
-            </fieldset>
-        </form>
-    <#else>
-        <p>You are already registered as ${user.fullName}</p>
-    </#if>
-
-</main>
 </body>
 </html>
