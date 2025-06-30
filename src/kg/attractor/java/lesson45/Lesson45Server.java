@@ -1,0 +1,201 @@
+package kg.attractor.java.lesson45;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.sun.net.httpserver.HttpExchange;
+import kg.attractor.java.lesson44.Lesson44Server;
+import kg.attractor.java.model.EmployeeAuth;
+import kg.attractor.java.server.ContentType;
+import kg.attractor.java.server.ResponseCodes;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+
+
+public class Lesson45Server extends Lesson44Server {
+
+    private final Path authPath = Path.of("data/json/auth.json");
+
+    private final List<EmployeeAuth> employees = new ArrayList<>();
+
+    private EmployeeAuth currentUser;
+
+
+
+    public Lesson45Server(String host, int port) throws IOException {
+        super(host, port);
+
+        loadUsersFromFile();
+
+        addTestUserIfAbsent("test@example.com",  "1234", "Тест Пользователь");
+        addTestUserIfAbsent("admin@mail.com",    "admin", "Администратор");
+
+        registerGet("/", ex -> redirect303(ex, "/login"));
+        registerGet ("/login",      this::loginGet);
+        registerPost("/login",      this::loginPost);
+
+        registerGet ("/register",   this::registerGet);
+        registerPost("/register",   this::registerPost);
+
+        registerGet ("/profile",    this::profileGet);
+
+        registerGet("/static/",     ex -> serveStatic(ex, Path.of("data")));
+    }
+
+
+    private void loginGet(HttpExchange exchange) {
+        Map<String,Object> data = new HashMap<>();
+        var q = exchange.getRequestURI().getQuery();
+        if (q != null) {
+            if (q.contains("error=1"))          data.put("error",   "Неверный e-mail или пароль");
+            if (q.contains("register=success")) data.put("success", "Регистрация прошла успешно, войдите.");
+        }
+        renderTemplate(exchange, "auth/login.ftlh", data);
+    }
+
+    private void loginPost(HttpExchange exchange) {
+        Map<String,String> f = parseFormData(body(exchange));
+        String email = f.get("email");
+        String pass  = f.get("password");
+
+        currentUser = employees.stream()
+                .filter(e -> e.getEmail().equalsIgnoreCase(email)
+                        && e.getPassword().equals(pass))
+                .findFirst()
+                .orElse(null);
+
+        if (currentUser != null)
+            redirect303(exchange, "/profile");
+        else
+            redirect303(exchange, "/login?error=1");
+    }
+
+
+    private void registerGet(HttpExchange exchange) {
+        Map<String,Object> data = new HashMap<>();
+        var q = exchange.getRequestURI().getQuery();
+        if (q != null && q.contains("error=1"))
+            data.put("error", "Такой пользователь уже существует");
+        renderTemplate(exchange, "auth/register.ftlh", data);
+    }
+
+    private void registerPost(HttpExchange exchange) {
+        Map<String,String> f = parseFormData(body(exchange));
+
+        String email    = f.get("email");
+        String pass     = f.get("password");
+        String fullname = f.get("fullname");
+
+        boolean exists = employees.stream()
+                .anyMatch(e -> e.getEmail().equalsIgnoreCase(email));
+
+        if (exists) {
+            redirect303(exchange, "/register?error=1");
+            return;
+        }
+
+        EmployeeAuth newUser = new EmployeeAuth(email, fullname, pass);
+        employees.add(newUser);
+        saveUsersToFile();
+        redirect303(exchange, "/login?register=success");
+    }
+
+
+    private void profileGet(HttpExchange exchange) {
+        Map<String, Object> data = new HashMap<>();
+
+        if (currentUser != null) {
+            data.put("email", currentUser.getEmail());
+            data.put("fullname", currentUser.getFullName());
+        } else {
+            data.put("email", "anonymous@example.com");
+            data.put("fullname", "Некий пользователь");
+        }
+
+        renderTemplate(exchange, "profile.ftlh", data);
+    }
+
+
+    private void serveStatic(HttpExchange exchange, Path dataDir) {
+        String reqPath = exchange.getRequestURI().getPath();
+        String relPath = reqPath.replaceFirst("^/static/?", "");
+        Path   file    = dataDir.resolve(relPath);
+
+        ContentType ct = fromMimeType(detectMimeType(file.toString()));
+        try {
+            if (Files.exists(file))
+                sendFile(exchange, file, ct);
+            else
+                sendByteData(exchange, ResponseCodes.NOT_FOUND, ContentType.TEXT_PLAIN,
+                        "Not found".getBytes());
+        } catch (IOException ioe) {
+            try { sendByteData(exchange, ResponseCodes.SERVER_ERROR, ContentType.TEXT_PLAIN,
+                    "Server error".getBytes()); }
+            catch (IOException ignored) {}
+        }
+    }
+
+    private Map<String,String> parseFormData(String raw) {
+        Map<String,String> res = new HashMap<>();
+        for (String pair : raw.split("&")) {
+            String[] kv = pair.split("=", 2);
+            if (kv.length == 2)
+                res.put(URLDecoder.decode(kv[0], StandardCharsets.UTF_8),
+                        URLDecoder.decode(kv[1], StandardCharsets.UTF_8));
+        }
+        return res;
+    }
+
+    private String detectMimeType(String name) {
+        if (name.endsWith(".css"))         return "text/css";
+        if (name.endsWith(".png"))         return "image/png";
+        if (name.matches(".*\\.(jpe?g)$")) return "image/jpeg";
+        if (name.endsWith(".html"))        return "text/html";
+        return "text/plain";
+    }
+
+    private ContentType fromMimeType(String mt) {
+        return switch (mt) {
+            case "text/css"   -> ContentType.TEXT_CSS;
+            case "image/png"  -> ContentType.IMAGE_PNG;
+            case "image/jpeg" -> ContentType.IMAGE_JPEG;
+            case "text/html"  -> ContentType.TEXT_HTML;
+            default           -> ContentType.TEXT_PLAIN;
+        };
+    }
+
+
+    private void loadUsersFromFile() {
+        try {
+            if (Files.exists(authPath)) {
+                Gson gson = new Gson();
+                String json = Files.readString(authPath);
+                Type listType = new TypeToken<List<EmployeeAuth>>(){}.getType();
+                List<EmployeeAuth> list = gson.fromJson(json, listType);
+                if (list != null) employees.addAll(list);
+            }
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
+    private void saveUsersToFile() {
+        try {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            String json = gson.toJson(employees);
+            Files.createDirectories(authPath.getParent());
+            Files.writeString(authPath, json, StandardCharsets.UTF_8);
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
+
+    private void addTestUserIfAbsent(String email, String pw, String fn) {
+        boolean exists = employees.stream()
+                .anyMatch(u -> u.getEmail().equalsIgnoreCase(email));
+        if (!exists) employees.add(new EmployeeAuth(email, fn, pw));
+    }
+}

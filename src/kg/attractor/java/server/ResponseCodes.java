@@ -2,7 +2,9 @@ package kg.attractor.java.server;
 
 public enum ResponseCodes {
     OK(200),
-    NOT_FOUND(404);
+    NOT_FOUND(404),
+    REDIRECT_303(303),
+    SERVER_ERROR(500);
 
     private final int code;
 

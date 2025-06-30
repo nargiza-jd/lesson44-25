@@ -1,149 +1,109 @@
 package kg.attractor.java.server;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class BasicServer {
 
     private final HttpServer server;
-    // путь к каталогу с файлами, которые будет отдавать сервер по запросам клиентов
+    private final Map<String, RouteHandler> routes = new HashMap<>();
     private final String dataDir = "data";
-    private Map<String, RouteHandler> routes = new HashMap<>();
+
+
 
     protected BasicServer(String host, int port) throws IOException {
-        server = createServer(host, port);
-        registerCommonHandlers();
-    }
+        server = HttpServer.create(new InetSocketAddress(host, port), 50);
+        System.out.printf("Starting server on http://%s:%s/%n", host, port);
 
-    private static String makeKey(String method, String route) {
-        return String.format("%s %s", method.toUpperCase(), route);
-    }
+        server.createContext("/", this::dispatch);
 
-    private static String makeKey(HttpExchange exchange) {
-        var method = exchange.getRequestMethod();
-        var path = exchange.getRequestURI().getPath();
 
-        var index = path.lastIndexOf(".");
-        var extOrPath = index != -1 ? path.substring(index).toLowerCase() : path;
-
-        return makeKey(method, extOrPath);
-    }
-
-    private static void setContentType(HttpExchange exchange, ContentType type) {
-        exchange.getResponseHeaders().set("Content-Type", String.valueOf(type));
-    }
-
-    private static HttpServer createServer(String host, int port) throws IOException {
-        var msg = "Starting server on http://%s:%s/%n";
-        System.out.printf(msg, host, port);
-        var address = new InetSocketAddress(host, port);
-        return HttpServer.create(address, 50);
-    }
-
-    private void registerCommonHandlers() {
-        // самый основной обработчик, который будет определять
-        // какие обработчики вызывать в дальнейшем
-        server.createContext("/", this::handleIncomingServerRequests);
-
-        // специфичные обработчики, которые выполняют свои действия
-        // в зависимости от типа запроса
-
-        // обработчик для корневого запроса
-        // именно этот обработчик отвечает что отображать,
-        // когда пользователь запрашивает localhost:9889
-        registerGet("/", exchange -> sendFile(exchange, makeFilePath("index.html"), ContentType.TEXT_HTML));
-
-        // эти обрабатывают запросы с указанными расширениями
-        registerFileHandler(".css", ContentType.TEXT_CSS);
+        registerFileHandler(".css",  ContentType.TEXT_CSS);
         registerFileHandler(".html", ContentType.TEXT_HTML);
-        registerFileHandler(".jpg", ContentType.IMAGE_JPEG);
-        registerFileHandler(".png", ContentType.IMAGE_PNG);
+        registerFileHandler(".jpg",  ContentType.IMAGE_JPEG);
+        registerFileHandler(".png",  ContentType.IMAGE_PNG);
 
+
+        registerGet("", exchange -> redirect303(exchange, "/auth/login"));
+        registerGet("/", exchange -> redirect303(exchange, "/auth/login"));
     }
 
-    protected final void registerGet(String route, RouteHandler handler) {
-        getRoutes().put("GET " + route, handler);
+    public final void start() { server.start(); }
+
+
+
+    protected final void registerGet (String route, RouteHandler h){ routes.put("GET "  + route, h); }
+    protected final void registerPost(String route, RouteHandler h){ routes.put("POST " + route, h); }
+
+    private void registerFileHandler(String ext, ContentType type){
+        registerGet(ext, ex -> sendFile(ex, makePath(ex), type));
     }
 
-    protected final void registerFileHandler(String fileExt, ContentType type) {
-        registerGet(fileExt, exchange -> sendFile(exchange, makeFilePath(exchange), type));
+
+
+    private void dispatch(HttpExchange ex) throws IOException {
+        String path = ex.getRequestURI().getPath();
+        if (path.equals("")) path = "/";
+        String key = ex.getRequestMethod().toUpperCase() + " " + path;
+        routes.getOrDefault(key, this::respond404).handle(ex);
     }
 
-    protected final Map<String, RouteHandler> getRoutes() {
-        return routes;
+
+    protected Path makePath(String... parts){ return Path.of(dataDir, parts); }
+
+    private Path makePath(HttpExchange ex){ return makePath(ex.getRequestURI().getPath()); }
+
+    protected void sendFile(HttpExchange ex, Path file, ContentType ct) throws IOException {
+        if (Files.notExists(file)){ respond404(ex); return; }
+        sendBytes(ex, ResponseCodes.OK, ct, Files.readAllBytes(file));
     }
 
-    protected final void sendFile(HttpExchange exchange, Path pathToFile, ContentType contentType) {
-        try {
-            if (Files.notExists(pathToFile)) {
-                respond404(exchange);
-                return;
-            }
-            var data = Files.readAllBytes(pathToFile);
-            sendByteData(exchange, ResponseCodes.OK, contentType, data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    protected void sendBytes(HttpExchange ex, ResponseCodes code,
+                             ContentType ct, byte[] data) throws IOException {
+        ex.getResponseHeaders().set("Content-Type", ct.toString());
+        ex.sendResponseHeaders(code.getCode(), data.length);
+        try (OutputStream os = ex.getResponseBody()){ os.write(data); }
     }
 
-    private Path makeFilePath(HttpExchange exchange) {
-        return makeFilePath(exchange.getRequestURI().getPath());
+    private void respond404(HttpExchange ex){
+        try { sendBytes(ex, ResponseCodes.NOT_FOUND,
+                ContentType.TEXT_PLAIN, "404 Not found".getBytes()); }
+        catch (IOException ignored){}
     }
 
-    protected Path makeFilePath(String... s) {
-        return Path.of(dataDir, s);
+    protected void redirect303(HttpExchange exchange, String to){
+        try{
+            exchange.getResponseHeaders().add("Location", to);
+            exchange.sendResponseHeaders(ResponseCodes.REDIRECT_303.getCode(), -1);
+        }catch (IOException ignored){}
+    }
+
+
+    protected String body(HttpExchange ex){
+        try (BufferedReader r = new BufferedReader(
+                new InputStreamReader(ex.getRequestBody(), StandardCharsets.UTF_8))){
+            return r.lines().collect(Collectors.joining());
+        }catch (IOException e){ return ""; }
     }
 
     protected final void sendByteData(HttpExchange exchange, ResponseCodes responseCode,
                                       ContentType contentType, byte[] data) throws IOException {
         try (var output = exchange.getResponseBody()) {
-            setContentType(exchange, contentType);
-            exchange.sendResponseHeaders(responseCode.getCode(), 0);
+            exchange.getResponseHeaders().set("Content-Type", contentType.toString());
+            exchange.sendResponseHeaders(responseCode.getCode(), data.length);
             output.write(data);
             output.flush();
         }
-    }
-
-    private void respond404(HttpExchange exchange) {
-        try {
-            var data = "404 Not found".getBytes();
-            sendByteData(exchange, ResponseCodes.NOT_FOUND, ContentType.TEXT_PLAIN, data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void handleIncomingServerRequests(HttpExchange exchange) throws IOException {
-        var route = getRoutes().getOrDefault(makeKey(exchange), this::respond404);
-        route.handle(exchange);
-    }
-
-    protected void registerPost(String path, HttpHandler handler) {
-        server.createContext(path, exchange -> {
-            if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-                handler.handle(exchange);
-            } else {
-                exchange.sendResponseHeaders(405, -1);
-            }
-        });
-    }
-
-    public final void start() {
-        server.start();
-    }
-
-    protected void registerAny(String route, RouteHandler handler) {
-        server.createContext(route, exchange -> {
-            handler.handle(exchange);
-        });
     }
 
 
