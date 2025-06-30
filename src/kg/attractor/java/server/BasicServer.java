@@ -106,5 +106,13 @@ public abstract class BasicServer {
         }
     }
 
+    protected void setCookie(HttpExchange exchange, Cookie cookie) {
+        exchange.getResponseHeaders().add("Set-Cookie", cookie.toString());
+    }
+
+    protected String getCookies(HttpExchange exchange) {
+        return exchange.getResponseHeaders().getOrDefault("Cookie", List.of("")).get(0);
+    }
+
 
 }
