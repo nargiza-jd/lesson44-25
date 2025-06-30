@@ -15,18 +15,17 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 
 public class Lesson45Server extends Lesson44Server {
 
-
-    private final Map<String, Map<String, String>> users = new HashMap<>();
-
     private final Path authPath = Path.of("data/json/auth.json");
-    private List<EmployeeAuth> employees = new ArrayList<>();
+
+    private final List<EmployeeAuth> employees = new ArrayList<>();
+
+    private EmployeeAuth currentUser;
+
 
 
     public Lesson45Server(String host, int port) throws IOException {
@@ -34,25 +33,28 @@ public class Lesson45Server extends Lesson44Server {
 
         loadUsersFromFile();
 
-        users.put("test@example.com", Map.of("password", "1234",  "fullname", "Тест Пользователь"));
-        users.put("admin@mail.com",   Map.of("password", "admin", "fullname", "Администратор"));
+        addTestUserIfAbsent("test@example.com",  "1234", "Тест Пользователь");
+        addTestUserIfAbsent("admin@mail.com",    "admin", "Администратор");
 
-        registerGet ("/",              exchange -> redirect303(exchange, "/auth/login"));
-        registerGet ("/auth/login",    this::loginGet);
-        registerPost("/auth/login",    this::loginPost);
-        registerGet ("/register",      this::registerGet);
-        registerPost("/register",      this::registerPost);
+        registerGet("/", ex -> redirect303(ex, "/login"));
+        registerGet ("/login",      this::loginGet);
+        registerPost("/login",      this::loginPost);
 
+        registerGet ("/register",   this::registerGet);
+        registerPost("/register",   this::registerPost);
 
-        registerGet("/static/", exchange -> serveStatic(exchange, Path.of("data")));
+        registerGet ("/profile",    this::profileGet);
+
+        registerGet("/static/",     ex -> serveStatic(ex, Path.of("data")));
     }
+
 
     private void loginGet(HttpExchange exchange) {
         Map<String,Object> data = new HashMap<>();
-        String q = exchange.getRequestURI().getQuery();
+        var q = exchange.getRequestURI().getQuery();
         if (q != null) {
             if (q.contains("error=1"))          data.put("error",   "Неверный e-mail или пароль");
-            if (q.contains("register=success")) data.put("success", "Регистрация прошла успешно. Войдите.");
+            if (q.contains("register=success")) data.put("success", "Регистрация прошла успешно, войдите.");
         }
         renderTemplate(exchange, "auth/login.ftlh", data);
     }
@@ -62,20 +64,22 @@ public class Lesson45Server extends Lesson44Server {
         String email = f.get("email");
         String pass  = f.get("password");
 
-        boolean match = employees.stream()
-                .anyMatch(e -> e.getEmail().equalsIgnoreCase(email)
-                        && e.getPassword().equals(pass));
+        currentUser = employees.stream()
+                .filter(e -> e.getEmail().equalsIgnoreCase(email)
+                        && e.getPassword().equals(pass))
+                .findFirst()
+                .orElse(null);
 
-        if (match) {
-            redirect303(exchange, "/books");
-        } else {
-            redirect303(exchange, "/auth/login?error=1");
-        }
+        if (currentUser != null)
+            redirect303(exchange, "/profile");
+        else
+            redirect303(exchange, "/login?error=1");
     }
+
 
     private void registerGet(HttpExchange exchange) {
         Map<String,Object> data = new HashMap<>();
-        String q = exchange.getRequestURI().getQuery();
+        var q = exchange.getRequestURI().getQuery();
         if (q != null && q.contains("error=1"))
             data.put("error", "Такой пользователь уже существует");
         renderTemplate(exchange, "auth/register.ftlh", data);
@@ -83,10 +87,10 @@ public class Lesson45Server extends Lesson44Server {
 
     private void registerPost(HttpExchange exchange) {
         Map<String,String> f = parseFormData(body(exchange));
+
         String email    = f.get("email");
         String pass     = f.get("password");
         String fullname = f.get("fullname");
-
 
         boolean exists = employees.stream()
                 .anyMatch(e -> e.getEmail().equalsIgnoreCase(email));
@@ -99,25 +103,41 @@ public class Lesson45Server extends Lesson44Server {
         EmployeeAuth newUser = new EmployeeAuth(email, fullname, pass);
         employees.add(newUser);
         saveUsersToFile();
-
-        redirect303(exchange, "/auth/login?register=success");
+        redirect303(exchange, "/login?register=success");
     }
+
+
+    private void profileGet(HttpExchange exchange) {
+        Map<String, Object> data = new HashMap<>();
+
+        if (currentUser != null) {
+            data.put("email", currentUser.getEmail());
+            data.put("fullname", currentUser.getFullName());
+        } else {
+            data.put("email", "anonymous@example.com");
+            data.put("fullname", "Некий пользователь");
+        }
+
+        renderTemplate(exchange, "profile.ftlh", data);
+    }
+
 
     private void serveStatic(HttpExchange exchange, Path dataDir) {
         String reqPath = exchange.getRequestURI().getPath();
         String relPath = reqPath.replaceFirst("^/static/?", "");
-        Path file = dataDir.resolve(relPath);
+        Path   file    = dataDir.resolve(relPath);
 
         ContentType ct = fromMimeType(detectMimeType(file.toString()));
         try {
-            if (Files.exists(file)) sendFile(exchange, file, ct);
-            else sendByteData(exchange, ResponseCodes.NOT_FOUND,
-                    ContentType.TEXT_PLAIN, "Not found".getBytes());
+            if (Files.exists(file))
+                sendFile(exchange, file, ct);
+            else
+                sendByteData(exchange, ResponseCodes.NOT_FOUND, ContentType.TEXT_PLAIN,
+                        "Not found".getBytes());
         } catch (IOException ioe) {
-            try {
-                sendByteData(exchange, ResponseCodes.SERVER_ERROR,
-                        ContentType.TEXT_PLAIN, "Server error".getBytes());
-            } catch (IOException ignored) {}
+            try { sendByteData(exchange, ResponseCodes.SERVER_ERROR, ContentType.TEXT_PLAIN,
+                    "Server error".getBytes()); }
+            catch (IOException ignored) {}
         }
     }
 
@@ -133,10 +153,10 @@ public class Lesson45Server extends Lesson44Server {
     }
 
     private String detectMimeType(String name) {
-        if (name.endsWith(".css"))                       return "text/css";
-        if (name.endsWith(".png"))                       return "image/png";
-        if (name.matches(".*\\.(jpe?g)$"))               return "image/jpeg";
-        if (name.endsWith(".html"))                      return "text/html";
+        if (name.endsWith(".css"))         return "text/css";
+        if (name.endsWith(".png"))         return "image/png";
+        if (name.matches(".*\\.(jpe?g)$")) return "image/jpeg";
+        if (name.endsWith(".html"))        return "text/html";
         return "text/plain";
     }
 
@@ -154,23 +174,28 @@ public class Lesson45Server extends Lesson44Server {
     private void loadUsersFromFile() {
         try {
             if (Files.exists(authPath)) {
-                String json = Files.readString(authPath);
                 Gson gson = new Gson();
-                Type listType = new TypeToken<List<EmployeeAuth>>() {}.getType();
-                employees = gson.fromJson(json, listType);
+                String json = Files.readString(authPath);
+                Type listType = new TypeToken<List<EmployeeAuth>>(){}.getType();
+                List<EmployeeAuth> list = gson.fromJson(json, listType);
+                if (list != null) employees.addAll(list);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     private void saveUsersToFile() {
         try {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             String json = gson.toJson(employees);
+            Files.createDirectories(authPath.getParent());
             Files.writeString(authPath, json, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
+
+    private void addTestUserIfAbsent(String email, String pw, String fn) {
+        boolean exists = employees.stream()
+                .anyMatch(u -> u.getEmail().equalsIgnoreCase(email));
+        if (!exists) employees.add(new EmployeeAuth(email, fn, pw));
     }
 }

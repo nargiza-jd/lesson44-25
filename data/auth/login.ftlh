@@ -7,7 +7,7 @@
 </head>
 <body>
 <main>
-    <form action="/auth/login" method="post">
+    <form method="post" action="/login">
         <fieldset>
             <div class="legend">
                 <p>Добро пожаловать!</p>
