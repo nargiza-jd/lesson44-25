@@ -24,7 +24,7 @@ public class Lesson45Server extends Lesson44Server {
 
     private final List<EmployeeAuth> employees = new ArrayList<>();
 
-    private EmployeeAuth currentUser;
+    protected EmployeeAuth currentUser;
 
 
 
@@ -32,20 +32,16 @@ public class Lesson45Server extends Lesson44Server {
         super(host, port);
 
         loadUsersFromFile();
+        addTestUserIfAbsent("test@example.com", "1234", "Тест Пользователь");
+        addTestUserIfAbsent("admin@mail.com",   "admin", "Администратор");
 
-        addTestUserIfAbsent("test@example.com",  "1234", "Тест Пользователь");
-        addTestUserIfAbsent("admin@mail.com",    "admin", "Администратор");
-
-        registerGet("/", ex -> redirect303(ex, "/login"));
-        registerGet ("/login",      this::loginGet);
-        registerPost("/login",      this::loginPost);
-
-        registerGet ("/register",   this::registerGet);
-        registerPost("/register",   this::registerPost);
-
-        registerGet ("/profile",    this::profileGet);
-
-        registerGet("/static/",     ex -> serveStatic(ex, Path.of("data")));
+        registerGet("/",       ex -> redirect303(ex, "/login"));
+        registerGet ("/login", this::loginGet);
+        registerPost("/login", this::loginPost);
+        registerGet ("/register", this::registerGet);
+        registerPost("/register", this::registerPost);
+        registerGet ("/profile",  this::profileGet);
+        registerGet("/static/",   ex -> serveStatic(ex, Path.of("data")));
     }
 
 
@@ -59,25 +55,25 @@ public class Lesson45Server extends Lesson44Server {
         renderTemplate(exchange, "auth/login.ftlh", data);
     }
 
-    private void loginPost(HttpExchange exchange) {
-        Map<String,String> f = parseFormData(body(exchange));
+    protected void loginPost(HttpExchange ex) {
+        Map<String,String> f = parseFormData(body(ex));
         String email = f.get("email");
         String pass  = f.get("password");
 
         currentUser = employees.stream()
-                .filter(e -> e.getEmail().equalsIgnoreCase(email)
-                        && e.getPassword().equals(pass))
+                .filter(u -> u.getEmail().equalsIgnoreCase(email)
+                        && u.getPassword().equals(pass))
                 .findFirst()
                 .orElse(null);
 
         if (currentUser != null)
-            redirect303(exchange, "/profile");
+            redirect303(ex, "/profile");
         else
-            redirect303(exchange, "/login?error=1");
+            redirect303(ex, "/login?error=1");
     }
 
 
-    private void registerGet(HttpExchange exchange) {
+    protected void registerGet(HttpExchange exchange) {
         Map<String,Object> data = new HashMap<>();
         var q = exchange.getRequestURI().getQuery();
         if (q != null && q.contains("error=1"))

@@ -20,7 +20,21 @@ public class Cookie<V> {
     this.name = name.strip();
     this.value = value;
   }
-  
+
+  public Cookie<V> maxAge(int seconds){
+    this.maxAge = seconds;
+    return this;
+  }
+
+  public Cookie<V> httpOnly(){
+    this.httpOnly = true;
+    return this;
+  }
+
+  public static <V> Cookie<V> of(String name, V value){
+    return new Cookie<>(name, value);
+  }
+
   public static <V> Cookie make(String name, V value) {
     return new Cookie<>(name, value);
   }

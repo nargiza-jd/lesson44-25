@@ -111,7 +111,9 @@ public abstract class BasicServer {
     }
 
     protected String getCookies(HttpExchange exchange) {
-        return exchange.getResponseHeaders().getOrDefault("Cookie", List.of("")).get(0);
+        return exchange.getRequestHeaders()
+                .getOrDefault("Cookie", List.of(""))
+                .get(0);
     }
 
 
