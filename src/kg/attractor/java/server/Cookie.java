@@ -3,16 +3,17 @@ package kg.attractor.java.server;
 import kg.attractor.java.utils.Utils;
 
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 
 public class Cookie<V> {
+
   private final String name;
   private final V value;
   private Integer maxAge;
   private boolean httpOnly;
+
 
   public Cookie(String name, V value) {
     Objects.requireNonNull(name);
@@ -21,56 +22,37 @@ public class Cookie<V> {
     this.value = value;
   }
 
-  public Cookie<V> maxAge(int seconds){
+  public static <V> Cookie<V> of(String name, V value) {
+    return new Cookie<>(name, value);
+  }
+
+  public Cookie<V> maxAge(int seconds) {
     this.maxAge = seconds;
     return this;
   }
-
-  public Cookie<V> httpOnly(){
+  public Cookie<V> httpOnly() {
     this.httpOnly = true;
     return this;
   }
 
-  public static <V> Cookie<V> of(String name, V value){
-    return new Cookie<>(name, value);
+
+  public Integer getMaxAge()      { return maxAge; }
+  public String  getName()        { return name;   }
+  public V       getValue()       { return value;  }
+  public boolean isHttpOnly()     { return httpOnly; }
+
+
+  public static Map<String,String> parse(String cookieString) {
+    return Utils.parseUrlEncoded(cookieString, ";");
   }
 
-  public static <V> Cookie make(String name, V value) {
-    return new Cookie<>(name, value);
-  }
+  @Override public String toString() {
+    String encName  = URLEncoder.encode(name.strip(),  StandardCharsets.UTF_8);
+    String encValue = URLEncoder.encode(value.toString(), StandardCharsets.UTF_8);
 
-  public void setMaxAge(Integer maxAgeInSeconds) {
-    this.maxAge = maxAgeInSeconds;
-  }
-
-  public void setHttpOnly(boolean httpOnly) {
-    this.httpOnly = httpOnly;
-  }
-
-  private V getValue() { return value; }
-  private Integer getMaxAge() { return maxAge; }
-  private String getName() { return name; }
-  private boolean isHttpOnly() { return httpOnly; }
-
-  public static Map<String, String> parse(String cookie) {
-    return Utils.parseUrlEncoded(cookie, ";");
-  }
-
-  @Override
-  public String toString() {
-    final StringBuilder sb = new StringBuilder();
-    Charset utf8 = StandardCharsets.UTF_8;
-    String encName = URLEncoder.encode(getName().strip(), utf8);
-    String strValue = getValue().toString();
-    String encValue = URLEncoder.encode(strValue, utf8);
-    sb.append(String.format("%s=%s", encName, encValue));
-
-    if (getMaxAge() != null) {
-      sb.append(String.format("; Max-Age=%s", getMaxAge()));
-    }
-    if (isHttpOnly()) {
-      sb.append("; HttpOnly");
-    }
+    StringBuilder sb = new StringBuilder(encName + '=' + encValue);
+    if (maxAge != null) sb.append("; Max-Age=").append(maxAge);
+    if (httpOnly)       sb.append("; HttpOnly");
     return sb.toString();
   }
 }

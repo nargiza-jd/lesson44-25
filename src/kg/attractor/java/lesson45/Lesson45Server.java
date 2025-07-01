@@ -22,7 +22,7 @@ public class Lesson45Server extends Lesson44Server {
 
     private final Path authPath = Path.of("data/json/auth.json");
 
-    private final List<EmployeeAuth> employees = new ArrayList<>();
+    protected final List<EmployeeAuth> employees = new ArrayList<>();
 
     protected EmployeeAuth currentUser;
 
@@ -137,7 +137,7 @@ public class Lesson45Server extends Lesson44Server {
         }
     }
 
-    private Map<String,String> parseFormData(String raw) {
+    protected Map<String,String> parseFormData(String raw) {
         Map<String,String> res = new HashMap<>();
         for (String pair : raw.split("&")) {
             String[] kv = pair.split("=", 2);
