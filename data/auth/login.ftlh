@@ -13,6 +13,14 @@
                 <p>Добро пожаловать!</p>
                 <img src="/static/images/1.jpg" alt="logo" width="150">
             </div>
+
+            <#if error??>
+                <div style="color:red; margin-bottom: 10px;">${error}</div>
+            </#if>
+            <#if success??>
+                <div style="color:green; margin-bottom: 10px;">${success}</div>
+            </#if>
+
             <div class="form-element">
                 <label for="email">E-mail</label>
                 <input type="email" name="email" id="email" placeholder="Введите email" required>
@@ -26,14 +34,6 @@
             </div>
         </fieldset>
     </form>
-
-    <#if error??>
-        <p style="color: red;">${error}</p>
-    </#if>
-
-    <#if success??>
-        <p style="color:green;">${success}</p>
-    </#if>
 
     <p>Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
 </main>

@@ -8,6 +8,8 @@ public class Book {
     private BookStatus status;
     private String issuedTo;
 
+    private String holderEmail;
+
     public Book(String id, String title, String author, String image, BookStatus status, String issuedTo) {
         this.id = id;
         this.title = title;
@@ -15,6 +17,15 @@ public class Book {
         this.image = image;
         this.status = status;
         this.issuedTo = issuedTo;
+    }
+
+
+    public String getHolderEmail() {
+        return holderEmail;
+    }
+
+    public void setHolderEmail(String holderEmail) {
+        this.holderEmail = holderEmail;
     }
 
     public String getId() {

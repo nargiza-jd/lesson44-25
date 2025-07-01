@@ -1,13 +1,22 @@
 package kg.attractor.java.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EmployeeAuth {
     private String email;
     private String fullName;
     private String password;
 
+    private List<String> issuedBookIds = new ArrayList<>();
+
     public EmployeeAuth() {}
     public EmployeeAuth(String email,String fn,String pw){
         this.email=email; this.fullName=fn; this.password=pw;
+    }
+
+    public List<String> getIssuedBookIds() {
+        return issuedBookIds;
     }
 
 
