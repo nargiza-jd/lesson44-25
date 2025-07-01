@@ -13,15 +13,6 @@ public class Utils {
     private Utils() {
     }
 
-    public static Map<String, String> parseUrlEncoded(String rawLines, String delimiter) {
-        String[] pairs = rawLines.split(delimiter);
-        Stream<Map.Entry<String, String>> stream = Arrays.stream(pairs)
-                .map(Utils::decode)
-                .filter(Optional::isPresent)
-                .map(Optional::get);
-        return stream.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
     private static Optional<Map.Entry<String,String>> decode(String kv) {
         if (!kv.contains("=")) return Optional.empty();
 
@@ -34,5 +25,16 @@ public class Utils {
         String value = URLDecoder.decode(pair[1].strip(), utf8);
 
         return Optional.of(Map.entry(key, value));
+    }
+
+
+    public static Map<String, String> parseUrlEncoded(String input, String delimiter) {
+        return Arrays.stream(input.split(delimiter))
+                .map(part -> part.split("="))
+                .filter(pair -> pair.length == 2)
+                .collect(Collectors.toMap(
+                        p -> URLDecoder.decode(p[0], StandardCharsets.UTF_8),
+                        p -> URLDecoder.decode(p[1], StandardCharsets.UTF_8)
+                ));
     }
 }

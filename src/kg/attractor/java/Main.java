@@ -1,9 +1,6 @@
 package kg.attractor.java;
 
-import kg.attractor.java.lesson44.Lesson44Server;
-import kg.attractor.java.lesson44.lesson47.Lesson47Server;
-import kg.attractor.java.lesson45.Lesson45Server;
-import kg.attractor.java.lesson46.Lesson46Server;
+import kg.attractor.java.lesson47.Lesson47Server;
 
 
 import java.io.IOException;
