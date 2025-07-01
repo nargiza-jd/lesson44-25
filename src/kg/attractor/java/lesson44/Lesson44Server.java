@@ -51,7 +51,7 @@ public class Lesson44Server extends BasicServer {
 
             Map<String, Object> data = new HashMap<>();
             data.put("book", book);
-            renderTemplate(exchange, "book.ftl", data);
+            renderTemplate(exchange, "book.ftlh", data);
         });
 
         registerGet("/employee", exchange -> {
