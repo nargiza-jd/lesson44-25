@@ -32,7 +32,7 @@ public class Lesson44Server extends BasicServer {
             Map<String, Object> data = new HashMap<>();
             data.put("books", SampleDataModel.getBooks());
             data.put("user", new SampleDataModel().getUser());
-            renderTemplate(exchange, "books.ftl", data);
+            renderTemplate(exchange, "books.ftlh", data);
         });
 
         registerGet("/book", exchange -> {

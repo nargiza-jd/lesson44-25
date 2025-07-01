@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список книг</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<main>
+    <h1>Библиотека</h1>
+
+    <#if error?? && error == "max2">
+        <p style="color: red;">Вы не можете взять больше двух книг.</p>
+    </#if>
+
+    <#if books?size == 0>
+        <p>Нет доступных книг.</p>
+    <#else>
+        <ul>
+            <#list books as book>
+                <li>
+                    <h3>${book.title}</h3>
+                    <p>Автор: ${book.author}</p>
+                    <#if book.image??>
+                        <img src="/static/images/${book.image}" alt="Обложка" width="100">
+                    </#if>
+
+                    <p>Статус:
+                        <#if book.status == "AVAILABLE">
+                            Доступна
+                        <#else>
+                            Выдана
+                        </#if>
+                    </p>
+
+                    <p>
+                        <a href="/book?id=${book.id}">Подробнее</a>
+                    </p>
+                </li>
+                <hr>
+            </#list>
+        </ul>
+    </#if>
+
+    <p><a href="/profile">← В личный кабинет</a></p>
+</main>
+</body>
+</html>
