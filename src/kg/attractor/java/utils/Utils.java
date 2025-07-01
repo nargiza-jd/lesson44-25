@@ -22,19 +22,16 @@ public class Utils {
         return stream.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private static Optional<Map.Entry<String, String>> decode(String kv) {
-        if (!kv.contains("=")) {
-            return Optional.empty();
-        }
+    private static Optional<Map.Entry<String,String>> decode(String kv) {
+        if (!kv.contains("=")) return Optional.empty();
 
-        String[] pairs = kv.split("=");
-        if (pairs.length != 2) {
-            return Optional.empty();
-        }
+        String[] pair = kv.split("=", 2);
+        if (pair.length != 2) return Optional.empty();
 
         Charset utf8 = StandardCharsets.UTF_8;
-        String key = URLDecoder.decode(pairs[0], utf8);
-        String value = URLDecoder.decode(pairs[1], utf8);
+
+        String key   = URLDecoder.decode(pair[0].strip(), utf8);
+        String value = URLDecoder.decode(pair[1].strip(), utf8);
 
         return Optional.of(Map.entry(key, value));
     }

@@ -13,7 +13,7 @@ public class Cookie<V> {
   private final V value;
   private Integer maxAge;
   private boolean httpOnly;
-
+  private String path = "/";
 
   public Cookie(String name, V value) {
     Objects.requireNonNull(name);
@@ -30,29 +30,36 @@ public class Cookie<V> {
     this.maxAge = seconds;
     return this;
   }
+
   public Cookie<V> httpOnly() {
     this.httpOnly = true;
     return this;
   }
 
 
+  public Cookie<V> path(String path) {
+    this.path = path;
+    return this;
+  }
+
   public Integer getMaxAge()      { return maxAge; }
   public String  getName()        { return name;   }
   public V       getValue()       { return value;  }
   public boolean isHttpOnly()     { return httpOnly; }
 
-
   public static Map<String,String> parse(String cookieString) {
     return Utils.parseUrlEncoded(cookieString, ";");
   }
 
-  @Override public String toString() {
-    String encName  = URLEncoder.encode(name.strip(),  StandardCharsets.UTF_8);
+  @Override
+  public String toString() {
+    String encName  = URLEncoder.encode(name.strip(), StandardCharsets.UTF_8);
     String encValue = URLEncoder.encode(value.toString(), StandardCharsets.UTF_8);
 
     StringBuilder sb = new StringBuilder(encName + '=' + encValue);
     if (maxAge != null) sb.append("; Max-Age=").append(maxAge);
     if (httpOnly)       sb.append("; HttpOnly");
+    if (path != null)   sb.append("; Path=").append(path);
     return sb.toString();
   }
 }
