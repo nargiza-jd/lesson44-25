@@ -11,7 +11,7 @@
         <fieldset>
             <div class="legend">
                 <p>Добро пожаловать!</p>
-                <img src="/static/images/1.jpg" alt="logo" width="150">
+                <img src="/images/1.jpg" alt="logo" width="150">
             </div>
 
             <#if error??>

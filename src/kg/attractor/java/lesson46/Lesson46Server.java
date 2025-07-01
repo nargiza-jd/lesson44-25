@@ -130,4 +130,9 @@ public class Lesson46Server extends Lesson45Server {
         }
         return null;
     }
+
+    protected String getQueryParams(HttpExchange exchange) {
+        String rawQuery = exchange.getRequestURI().getRawQuery();
+        return rawQuery == null ? "" : rawQuery;
+    }
 }
