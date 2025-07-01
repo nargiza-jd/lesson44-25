@@ -25,4 +25,7 @@ public class Lesson47Server extends Lesson46Server {
 
         renderTemplate(exchange, "query.ftlh", data);
     }
+
+
+
 }
