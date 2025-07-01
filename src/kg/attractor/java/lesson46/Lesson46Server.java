@@ -115,13 +115,13 @@ public class Lesson46Server extends Lesson45Server {
         return Cookie.parse(getCookies(ex)).get("SID");
     }
 
-    private EmployeeAuth findUserBySession(HttpExchange ex) {
+    protected EmployeeAuth findUserBySession(HttpExchange ex) {
         String sid = readSessionId(ex);
         return sid == null ? null : sessions.get(sid);
     }
 
 
-    private String getQueryParam(HttpExchange ex, String key) {
+    protected String getQueryParam(HttpExchange ex, String key) {
         String q = ex.getRequestURI().getQuery();
         if (q == null) return null;
         for (String p : q.split("&")) {
