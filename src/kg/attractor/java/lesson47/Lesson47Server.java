@@ -37,7 +37,20 @@ public class Lesson47Server extends Lesson46Server {
 
     private void booksPage(HttpExchange ex) {
         SampleDataModel.reloadBooks();
-        renderTemplate(ex, "books.ftlh", Map.of("books", SampleDataModel.getBooks()));
+        Map<String,Object> data = new HashMap<>();
+        data.put("books", SampleDataModel.getBooks());
+
+        String errorParam = getQueryParam(ex, "error");
+        if (errorParam != null && !errorParam.isEmpty()) {
+            data.put("error", errorParam);
+        }
+
+        String successParam = getQueryParam(ex, "success");
+        if (successParam != null && !successParam.isEmpty()) {
+            data.put("success", successParam);
+        }
+
+        renderTemplate(ex, "books.ftlh", data);
     }
 
     private void myBooksPage(HttpExchange ex) {
@@ -55,13 +68,12 @@ public class Lesson47Server extends Lesson46Server {
         EmployeeAuth current = findUserBySession(ex);
         if (current == null) { redirect303(ex, "/login"); return; }
 
-        System.out.println("User for history: " + current.getEmail());
 
         SampleDataModel.reloadBooks();
-        System.out.println("All books loaded. Total: " + SampleDataModel.getBooks().size());
+
 
         List<String> userHistoryIds = current.getHistoryBookIds();
-        System.out.println("User history IDs: " + userHistoryIds);
+
 
         List<Book> history = SampleDataModel.getBooks().stream()
                 .filter(b -> {
@@ -70,10 +82,10 @@ public class Lesson47Server extends Lesson46Server {
                 })
                 .toList();
 
-        System.out.println("Filtered history books count: " + history.size());
+
 
         renderTemplate(ex, "history.ftlh", Map.of("books", history));
-        System.out.println("History page rendered successfully.");
+
     }
 
 
@@ -113,6 +125,7 @@ public class Lesson47Server extends Lesson46Server {
 
 
     private void takeBook(HttpExchange ex) {
+        SampleDataModel.loadAuthEmployees();
         EmployeeAuth u = findUserBySession(ex);
         if (u == null) { redirect303(ex, "/login"); return; }
 

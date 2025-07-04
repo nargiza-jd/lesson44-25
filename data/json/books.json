@@ -5,8 +5,7 @@
     "author": "Robert Martin",
     "image": "clean_code.jpg",
     "description": "Практическое руководство по написанию читаемого, поддерживаемого и чистого кода на Java.",
-    "status": "ISSUED",
-    "holderEmail": "tobokelovna1n@gmail.com"
+    "status": "AVAILABLE"
   },
   {
     "id": "2",
@@ -14,9 +13,7 @@
     "author": "Joshua Bloch",
     "image": "effective_java.jpg",
     "description": "Коллекция лучших практик и советов по использованию Java от одного из ведущих разработчиков.",
-    "status": "ISSUED",
-    "issuedTo": "1",
-    "holderEmail": "tobokelovna1n@gmail.com"
+    "status": "AVAILABLE"
   },
   {
     "id": "3",
@@ -24,8 +21,7 @@
     "author": "Brian Goetz",
     "image": "concurrency.jpg",
     "description": "Глубокое изучение многопоточности и потокобезопасности в Java.",
-    "status": "ISSUED",
-    "holderEmail": "tobokelovna1n@gmail.com"
+    "status": "AVAILABLE"
   },
   {
     "id": "4",
@@ -33,9 +29,7 @@
     "author": "Kathy Sierra",
     "image": "head_first.jpg",
     "description": "Лёгкое и визуальное введение в Java для начинающих программистов.",
-    "status": "ISSUED",
-    "issuedTo": "2",
-    "holderEmail": "tobokelovna1n@gmail.com"
+    "status": "AVAILABLE"
   },
   {
     "id": "5",
@@ -43,8 +37,7 @@
     "author": "Craig Walls",
     "image": "spring_in_action.jpg",
     "description": "Руководство по разработке приложений с использованием Spring Framework.",
-    "status": "ISSUED",
-    "holderEmail": "tobokelovna1n@gmail.com"
+    "status": "AVAILABLE"
   },
   {
     "id": "6",
@@ -53,6 +46,6 @@
     "image": "reference.jpg",
     "description": "Полное руководство по Java — от основ до продвинутых тем.",
     "status": "ISSUED",
-    "holderEmail": "tobokelovna1n@gmail.com"
+    "holderEmail": "qwe@qwe.qwe"
   }
 ]

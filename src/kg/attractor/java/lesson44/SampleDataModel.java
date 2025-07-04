@@ -24,8 +24,13 @@ public class SampleDataModel {
         try (Reader r = new FileReader(BOOKS_FILE)) {
             Type t = new TypeToken<List<Book>>(){}.getType();
             List<Book> list = new Gson().fromJson(r, t);
+
             return list == null ? new ArrayList<>() : list;
-        } catch (IOException e) { return new ArrayList<>(); }
+        } catch (IOException e) {
+
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     public static List<Book> getBooks()            { return books; }
