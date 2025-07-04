@@ -34,7 +34,9 @@ fieldset {
 }
 
 .form-element {
-    margin-top: 20px;
+        text-align: center;
+        margin-top: 25px;
+        font-size: 16px;
 }
 
 fieldset input {
@@ -75,4 +77,10 @@ fieldset label {
     font-weight: bold;
     color: white;
     cursor: pointer;
+}
+
+.registration-prompt {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 16px;
 }

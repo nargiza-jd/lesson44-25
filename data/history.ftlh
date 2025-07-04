@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>История книг</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/forms.css">
+    <link rel="stylesheet" href="/static/css/freemarker.css">
 </head>
 <body>
 <main>

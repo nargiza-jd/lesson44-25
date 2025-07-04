@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Профиль</title>
+    <link rel="stylesheet" href="/static/css/forms.css">
+    <link rel="stylesheet" href="/static/css/freemarker.css">
 </head>
 <body>
     <h1>Личный кабинет</h1>

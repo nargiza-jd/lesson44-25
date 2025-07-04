@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Вход в библиотеку</title>
     <link rel="stylesheet" href="/static/css/forms.css">
+    <link rel="stylesheet" href="/static/css/freemarker.css">
 </head>
 <body>
 <main>
@@ -11,7 +12,7 @@
         <fieldset>
             <div class="legend">
                 <p>Добро пожаловать!</p>
-                <img src="/images/1.jpg" alt="logo" width="150">
+                <img src="static/images/1.jpg" alt="logo" width="150">
             </div>
 
             <#if error??>
@@ -35,7 +36,9 @@
         </fieldset>
     </form>
 
-    <p>Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
+    <div class="registration-prompt">
+        Нет аккаунта? <a href="/register">Зарегистрироваться</a>
+    </div>
 </main>
 </body>
 </html>

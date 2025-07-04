@@ -1,6 +1,7 @@
 package kg.attractor.java.server;
 
 import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
@@ -19,13 +20,13 @@ public abstract class BasicServer {
     private final Map<String, RouteHandler> routes = new HashMap<>();
     private final String dataDir = "data";
 
-
-
     protected BasicServer(String host, int port) throws IOException {
         server = HttpServer.create(new InetSocketAddress(host, port), 50);
         System.out.printf("Starting server on http://%s:%s/%n", host, port);
 
         server.createContext("/", this::dispatch);
+
+        server.createContext("/static", new StaticFileHandler("data/static"));
 
 
         registerFileHandler(".css",  ContentType.TEXT_CSS);
@@ -33,14 +34,11 @@ public abstract class BasicServer {
         registerFileHandler(".jpg",  ContentType.IMAGE_JPEG);
         registerFileHandler(".png",  ContentType.IMAGE_PNG);
 
-
         registerGet("", exchange -> redirect303(exchange, "/auth/login"));
         registerGet("/", exchange -> redirect303(exchange, "/auth/login"));
     }
 
     public final void start() { server.start(); }
-
-
 
     protected final void registerGet (String route, RouteHandler h){ routes.put("GET "  + route, h); }
     protected final void registerPost(String route, RouteHandler h){ routes.put("POST " + route, h); }
@@ -49,15 +47,18 @@ public abstract class BasicServer {
         registerGet(ext, ex -> sendFile(ex, makePath(ex), type));
     }
 
-
-
     private void dispatch(HttpExchange ex) throws IOException {
         String path = ex.getRequestURI().getPath();
+
+        if (path.startsWith("/static/")) {
+
+            return;
+        }
+
         if (path.equals("")) path = "/";
         String key = ex.getRequestMethod().toUpperCase() + " " + path;
         routes.getOrDefault(key, this::respond404).handle(ex);
     }
-
 
     protected Path makePath(String... parts){ return Path.of(dataDir, parts); }
 
@@ -88,7 +89,6 @@ public abstract class BasicServer {
         }catch (IOException ignored){}
     }
 
-
     protected String body(HttpExchange ex){
         try (BufferedReader r = new BufferedReader(
                 new InputStreamReader(ex.getRequestBody(), StandardCharsets.UTF_8))){
@@ -116,5 +116,37 @@ public abstract class BasicServer {
                 .get(0);
     }
 
+    static class StaticFileHandler implements HttpHandler {
+        private final String staticFilesRoot;
+
+        public StaticFileHandler(String staticFilesRoot) {
+            this.staticFilesRoot = staticFilesRoot;
+        }
+
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String uriPath = exchange.getRequestURI().getPath();
+
+            String relativePath = uriPath.replaceFirst("/static", "");
+
+            File file = new File(staticFilesRoot, relativePath);
+
+            if (file.exists() && !file.isDirectory()) {
+                String contentType = Files.probeContentType(file.toPath());
+                if (contentType == null) {
+                    contentType = "application/octet-stream";
+                }
+                exchange.getResponseHeaders().set("Content-Type", contentType);
+
+                exchange.sendResponseHeaders(200, file.length());
+                try (OutputStream os = exchange.getResponseBody()){
+                    Files.copy(file.toPath(), os);
+                }
+            } else {
+                System.err.println("Static file not found or is a directory: " + file.getAbsolutePath());
+                exchange.sendResponseHeaders(404, -1);
+            }
+        }
+    }
 
 }

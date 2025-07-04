@@ -2,56 +2,41 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>${book.title}</title>
+    <title>${book.title} - Детали книги</title>
     <link rel="stylesheet" href="/static/css/forms.css">
     <link rel="stylesheet" href="/static/css/freemarker.css">
+    <link rel="stylesheet" href="/static/css/book-details.css">
 </head>
 <body>
-<main>
-    <h1>${book.title}</h1>
-    <p><strong>Автор:</strong> ${book.author}</p>
+    <div class="container">
+        <h1>${book.title}</h1>
 
-    <#if book.image?has_content>
-        <img src="/static/images/${book.image}" alt="Обложка" width="100">
-    </#if>
+        <div class="book-details">
+            <div class="book-cover-container">
+                <img src="/static/images/${book.image}" alt="Обложка книги: ${book.title}" class="book-cover">
+            </div>
+            <div class="book-info">
+                <p><strong>Автор:</strong> ${book.author}</p>
+                <p><strong>Описание:</strong> ${book.description}</p>
+                <p><strong>Статус:</strong> ${book.status}</p>
+                <#if book.holderEmail?? && book.holderEmail?has_content>
+                    <p><strong>Выдана пользователю:</strong> ${book.holderEmail}</p>
+                </#if>
+            </div>
+        </div>
 
-    <p><strong>Описание:</strong>
-        <#if book.description?has_content>
-            ${book.description}
-        <#else>
-            Нет описания
-        </#if>
-    </p>
-
-
-    <p><strong>Статус:</strong>
-        <#switch book.status?string>
-            <#case "AVAILABLE">Доступна<#break>
-            <#case "ISSUED">Выдана<#break>
-            <#default>Неизвестно
-        </#switch>
-    </p>
-
-    <#if book.status?string == "ISSUED" && book.holderEmail?has_content>
-        <p><strong>Выдана пользователю:</strong> ${book.holderEmail}</p>
-    </#if>
-
-    <div>
-
-        <#if book.status?string == "AVAILABLE">
-            <a href="/books/take?id=${book.id}">Взять книгу</a>
-        <#elseif book.status?string == "ISSUED"
-                 && book.holderEmail?has_content
-                 && book.holderEmail == email>
-            <a href="/books/return?id=${book.id}">Вернуть книгу</a>
-        </#if>
+        <div class="action-links">
+            <#if book.status == "ISSUED">
+                <a href="/books/return?id=${book.id}">Вернуть книгу</a>
+            <#else>
+                <a href="/books/take?id=${book.id}">Взять книгу</a>
+            </#if>
+            <p><a href="/books">← Назад к списку книг</a></p>
+        </div>
 
         <#if returned??>
-            <p style="color: green; margin-top: 10px;">Книга успешно возвращена!</p>
+            <p class="success-message">Книга успешно возвращена!</p>
         </#if>
     </div>
-
-    <p><a href="/books">← Назад к списку книг</a></p>
-</main>
 </body>
 </html>

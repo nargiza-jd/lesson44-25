@@ -39,11 +39,15 @@ public class SampleDataModel {
     }
 
     public static void saveBooksToJson() {
-        try (Writer w = new FileWriter(BOOKS_FILE)) {
-            new GsonBuilder().setPrettyPrinting().create().toJson(books, w);
-        } catch (IOException ignored) {}
-
-        reloadBooks();
+        System.out.println("Попытка сохранения книг в JSON");
+        try (FileWriter writer = new FileWriter("data/json/books.json")) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            gson.toJson(books, writer);
+            System.out.println("Книги успешно сохранены в JSON.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Ошибка при сохранении книг в JSON: " + e.getMessage());
+        }
     }
 
 

@@ -5,7 +5,8 @@
     "author": "Robert Martin",
     "image": "clean_code.jpg",
     "description": "Практическое руководство по написанию читаемого, поддерживаемого и чистого кода на Java.",
-    "status": "AVAILABLE"
+    "status": "ISSUED",
+    "holderEmail": "tobokelovna1n@gmail.com"
   },
   {
     "id": "2",

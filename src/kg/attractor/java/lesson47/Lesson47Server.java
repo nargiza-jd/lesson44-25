@@ -1,6 +1,7 @@
 package kg.attractor.java.lesson47;
 
 import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import kg.attractor.java.lesson44.SampleDataModel;
 import kg.attractor.java.lesson46.Lesson46Server;
 import kg.attractor.java.model.Book;
@@ -9,7 +10,10 @@ import kg.attractor.java.model.EmployeeAuth;
 import kg.attractor.java.server.Cookie;
 import kg.attractor.java.utils.Utils;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -214,4 +218,5 @@ public class Lesson47Server extends Lesson46Server {
 
         redirect303(ex, "/books");
     }
+
 }
