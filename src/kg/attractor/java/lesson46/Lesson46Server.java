@@ -11,7 +11,7 @@ import java.util.*;
 
 public class Lesson46Server extends Lesson45Server {
 
-    protected final Map<String, EmployeeAuth> sessions = new HashMap<>();
+    protected static final Map<String, EmployeeAuth> sessions = new HashMap<>();
 
     public Lesson46Server(String host, int port) throws IOException {
         super(host, port);
@@ -63,6 +63,8 @@ public class Lesson46Server extends Lesson45Server {
         Map<String,Object> data = new HashMap<>();
         data.put("email",    user.getEmail());
         data.put("fullname", user.getFullName());
+        data.put("issuedCount", user.getIssuedBookIds().size());
+
         renderTemplate(ex, "profile.ftlh", data);
     }
 
@@ -88,7 +90,7 @@ public class Lesson46Server extends Lesson45Server {
         redirect303(ex, "/books");
     }
 
-    private void returnBook(HttpExchange ex) {
+    protected void returnBook(HttpExchange ex) {
         EmployeeAuth u = findUserBySession(ex);
         if (u == null) { redirect303(ex, "/login"); return; }
 
@@ -118,6 +120,7 @@ public class Lesson46Server extends Lesson45Server {
     protected EmployeeAuth findUserBySession(HttpExchange ex) {
         String sid = readSessionId(ex);
         return sid == null ? null : sessions.get(sid);
+
     }
 
 
@@ -134,5 +137,9 @@ public class Lesson46Server extends Lesson45Server {
     protected String getQueryParams(HttpExchange exchange) {
         String rawQuery = exchange.getRequestURI().getRawQuery();
         return rawQuery == null ? "" : rawQuery;
+    }
+
+    protected String getCookies(HttpExchange ex) {
+        return Optional.ofNullable(ex.getRequestHeaders().getFirst("Cookie")).orElse("");
     }
 }

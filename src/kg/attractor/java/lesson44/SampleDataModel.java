@@ -1,193 +1,117 @@
 package kg.attractor.java.lesson44;
 
-import kg.attractor.java.model.Book;
-import kg.attractor.java.model.BookStatus;
-import kg.attractor.java.model.Employee;
-
-import java.io.FileWriter;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.google.gson.Gson;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
-import kg.attractor.java.model.EmployeeAuth;
+import kg.attractor.java.model.*;
 
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Type;
-
-
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class SampleDataModel {
-    private User user = new User("John", "Doe");
-    private LocalDateTime currentDateTime = LocalDateTime.now();
-    private List<User> customers = new ArrayList<>();
 
 
-    private static final List<Book> books = loadBooksFromJson();
-    private static final List<Employee> employees = loadEmployeesFromJson();
+    private static final String BOOKS_FILE = "data/json/books.json";
+    private static final List<Book> books = new ArrayList<>();
+    static { reloadBooks(); }
 
-    public static List<Employee> getEmployees() {
-        return employees;
+    public static void reloadBooks() {
+        books.clear();
+        books.addAll(loadBooks());
+    }
+    private static List<Book> loadBooks() {
+        try (Reader r = new FileReader(BOOKS_FILE)) {
+            Type t = new TypeToken<List<Book>>(){}.getType();
+            List<Book> list = new Gson().fromJson(r, t);
+            return list == null ? new ArrayList<>() : list;
+        } catch (IOException e) { return new ArrayList<>(); }
+    }
+
+    public static List<Book> getBooks()            { return books; }
+    public static Book getBookById(String id)      {
+        return books.stream().filter(b -> b.getId().equals(id)).findFirst().orElse(null);
+    }
+
+    public static void saveBooksToJson() {
+        try (Writer w = new FileWriter(BOOKS_FILE)) {
+            new GsonBuilder().setPrettyPrinting().create().toJson(books, w);
+        } catch (IOException ignored) {}
+
+        reloadBooks();
     }
 
 
-    public static List<Employee> loadEmployeesFromJson() {
-        Gson gson = new Gson();
-        try (FileReader reader = new FileReader("data/json/employees.json")) {
-            Type empListType = new TypeToken<List<Employee>>() {}.getType();
-            return gson.fromJson(reader, empListType);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
+    private static final List<Employee> employees = loadEmployees();
+    private static List<Employee> loadEmployees() {
+        try (Reader r = new FileReader("data/json/employees.json")) {
+            Type t = new TypeToken<List<Employee>>(){}.getType();
+            List<Employee> list = new Gson().fromJson(r, t);
+            return list == null ? new ArrayList<>() : list;
+        } catch (IOException e) { return new ArrayList<>(); }
+    }
+    public static List<Employee> getEmployees()            { return employees; }
+    public static Employee getEmployeeById(String id)      {
+        return employees.stream().filter(e -> e.getId().equals(id)).findFirst().orElse(null);
+    }
+
+
+    private static final String AUTH_FILE = "data/json/auth.json";
+    private static final Gson   GSON      = new GsonBuilder().setPrettyPrinting().create();
+    private static List<EmployeeAuth> authEmployees = new ArrayList<>();
+
+    public static List<EmployeeAuth> getAuthEmployees() { return authEmployees; }
+    public static void loadAuthEmployees() {
+        try (Reader r = new FileReader(AUTH_FILE)) {
+            Type t = new TypeToken<List<EmployeeAuth>>(){}.getType();
+            List<EmployeeAuth> list = GSON.fromJson(r, t);
+            authEmployees = list == null ? new ArrayList<>() : list;
+        } catch (FileNotFoundException ignored) {
+            authEmployees = new ArrayList<>();
+        } catch (IOException ignored) {
+            authEmployees = new ArrayList<>();
         }
     }
-
-    public SampleDataModel() {
-        customers.add(new User("Marco"));
-        customers.add(new User("Winston", "Duarte"));
-        customers.add(new User("Amos", "Burton", "'Timmy'"));
-        customers.get(1).setEmailConfirmed(true);
+    public static void saveAuthEmployees() {
+        try (Writer w = new FileWriter(AUTH_FILE)) {
+            GSON.toJson(authEmployees, w);
+        } catch (IOException ignored) {}
     }
 
-    public static Employee getEmployeeById(String id) {
-        for (Employee employee : employees) {
-            if (employee.getId().equals(id)) {
-                return employee;
-            }
-        }
-        return null;
-    }
-    public User getUser() {
-        return user;
-    }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+    private final User user = new User("John", "Doe");
+    private final LocalDateTime currentDateTime = LocalDateTime.now();
+    private final List<User> customers = List.of(
+            new User("Marco"),
+            new User("Winston","Duarte"),
+            new User("Amos","Burton","'Timmy'")
+    );
 
-    public LocalDateTime getCurrentDateTime() {
-        return currentDateTime;
-    }
-
-    public void setCurrentDateTime(LocalDateTime currentDateTime) {
-        this.currentDateTime = currentDateTime;
-    }
-
-    public List<User> getCustomers() {
-        return customers;
-    }
-
-    public void setCustomers(List<User> customers) {
-        this.customers = customers;
-    }
-
-    public static List<Book> getBooks() {
-        return books;
-    }
-
-    public static Book getBookById(String id) {
-        for (Book book : books) {
-            if (book.getId().equals(id)) {
-                return book;
-            }
-        }
-        return null;
-    }
-
-    public static List<Book> loadBooksFromJson() {
-        Gson gson = new Gson();
-        try (FileReader reader = new FileReader("data/json/books.json")) {
-            Type bookListType = new TypeToken<List<Book>>() {}.getType();
-            return gson.fromJson(reader, bookListType);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
-    }
+    public User getUser()                     { return user; }
+    public LocalDateTime getCurrentDateTime() { return currentDateTime; }
+    public List<User> getCustomers()          { return customers; }
 
     public static class User {
-        private String firstName;
-        private String lastName;
-        private String middleName = null;
-        private boolean emailConfirmed = false;
-        private String email;
-
-        public User(String firstName) {
-            this(firstName, null, null);
+        private String firstName, lastName, middleName, email;
+        private boolean emailConfirmed;
+        public User(String fn)                { this(fn,null,null); }
+        public User(String fn,String ln)      { this(fn,ln,null);  }
+        public User(String fn,String ln,String mn){
+            firstName=fn; lastName=ln; middleName=mn;
+            email = fn+"@test.mail";
         }
 
-        public User(String firstName, String lastName) {
-            this(firstName, lastName, null);
-        }
-
-        public User(String firstName, String lastName, String middleName) {
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.middleName = middleName;
-            this.email = firstName + "@test.mail";
-        }
-
-        public String getFirstName() {
-            return firstName;
-        }
-
-        public void setFirstName(String firstName) {
-            this.firstName = firstName;
-        }
-
-        public String getLastName() {
-            return lastName;
-        }
-
-        public void setLastName(String lastName) {
-            this.lastName = lastName;
-        }
-
-        public String getMiddleName() {
-            return middleName;
-        }
-
-        public void setMiddleName(String middleName) {
-            this.middleName = middleName;
-        }
-
-        public boolean isEmailConfirmed() {
-            return emailConfirmed;
-        }
-
-        public void setEmailConfirmed(boolean emailConfirmed) {
-            this.emailConfirmed = emailConfirmed;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
+        public String  getFirstName()              { return firstName; }
+        public void    setFirstName(String v)      { firstName = v; }
+        public String  getLastName()               {
+            return lastName; }
+        public void    setLastName(String v)       { lastName = v; }
+        public String  getMiddleName()             { return middleName; }
+        public void    setMiddleName(String v)     { middleName = v; }
+        public String  getEmail()                  { return email; }
+        public void    setEmail(String v)          { email = v; }
+        public boolean isEmailConfirmed()          { return emailConfirmed; }
+        public void    setEmailConfirmed(boolean v){ emailConfirmed = v; }
     }
-
-
-    private static final List<EmployeeAuth> auth =
-            loadAuth();
-
-    public static List<EmployeeAuth> getAuth(){ return auth; }
-
-    private static List<EmployeeAuth> loadAuth(){
-        try(FileReader r=new FileReader("data/json/auth.json")){
-            return new Gson().fromJson(r,
-                    new TypeToken<List<EmployeeAuth>>(){}.getType());
-        }catch(IOException e){return new ArrayList<>();}
-    }
-
-    public static void saveAuth() {
-        try(FileWriter w = new FileWriter("data/json/auth.json")){
-            new Gson().toJson(auth,w);
-        }catch(IOException ignored){}
-    }
-
-
 }
+

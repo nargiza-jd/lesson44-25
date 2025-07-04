@@ -1,5 +1,7 @@
 package kg.attractor.java.model;
 
+import kg.attractor.java.lesson44.SampleDataModel;
+
 public class Book {
     private String id;
     private String title;
@@ -78,6 +80,8 @@ public class Book {
 
     public void setStatus(BookStatus status) {
         this.status = status;
+
+        SampleDataModel.saveBooksToJson();
     }
 
     public void setIssuedTo(String issuedTo) {

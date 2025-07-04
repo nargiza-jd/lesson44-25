@@ -6,44 +6,51 @@
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <main>
-        <h1>${book.title}</h1>
-        <p><strong>Автор:</strong> ${book.author}</p>
+<main>
+    <h1>${book.title}</h1>
+    <p><strong>Автор:</strong> ${book.author}</p>
 
-        <#if book.image??>
-            <img src="/static/images/${book.image}" alt="Обложка" width="200">
+    <#if book.image?has_content>
+        <img src="/static/images/${book.image}" alt="Обложка" width="100">
+    </#if>
+
+    <p><strong>Описание:</strong>
+        <#if book.description?has_content>
+            ${book.description}
+        <#else>
+            Нет описания
+        </#if>
+    </p>
+
+
+    <p><strong>Статус:</strong>
+        <#switch book.status?string>
+            <#case "AVAILABLE">Доступна<#break>
+            <#case "ISSUED">Выдана<#break>
+            <#default>Неизвестно
+        </#switch>
+    </p>
+
+    <#if book.status?string == "ISSUED" && book.holderEmail?has_content>
+        <p><strong>Выдана пользователю:</strong> ${book.holderEmail}</p>
+    </#if>
+
+    <div>
+
+        <#if book.status?string == "AVAILABLE">
+            <a href="/books/take?id=${book.id}">Взять книгу</a>
+        <#elseif book.status?string == "ISSUED"
+                 && book.holderEmail?has_content
+                 && book.holderEmail == email>
+            <a href="/books/return?id=${book.id}">Вернуть книгу</a>
         </#if>
 
-        <p><strong>Описание:</strong>
-            <#if book.description??>
-                ${book.description}
-            <#else>
-                Нет описания
-            </#if>
-        </p>
-
-        <p><strong>Статус:</strong>
-            <#if book.status == "AVAILABLE">
-                Доступна
-            <#else>
-                Выдана
-            </#if>
-        </p>
-
-        <#if book.holderEmail??>
-            <p><strong>Выдана пользователю:</strong> ${book.holderEmail}</p>
+        <#if returned??>
+            <p style="color: green; margin-top: 10px;">Книга успешно возвращена!</p>
         </#if>
+    </div>
 
-        <div>
-
-            <#if book.status == "AVAILABLE">
-                <a href="/take?id=${book.id}">Взять книгу</a>
-            <#else>
-                <a href="/return?id=${book.id}">Вернуть книгу</a>
-            </#if>
-        </div>
-
-        <p><a href="/books">← Назад к списку книг</a></p>
-    </main>
+    <p><a href="/books">← Назад к списку книг</a></p>
+</main>
 </body>
 </html>

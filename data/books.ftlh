@@ -9,8 +9,21 @@
 <main>
     <h1>Библиотека</h1>
 
+    <#if success?? && success == "taken">
+        <p style="color: green;">Вы успешно взяли книгу!</p>
+    </#if>
+    <#if success?? && success == "returned">
+        <p style="color: green;">Книга успешно возвращена.</p>
+    </#if>
     <#if error?? && error == "max2">
         <p style="color: red;">Вы не можете взять больше двух книг.</p>
+    </#if>
+    <#if success?? && success == "1">
+        <p style="color: green;">Книга успешно выдана.</p>
+    </#if>
+
+    <#if error?? && error == "alreadyTaken">
+        <p style="color: red;">Вы уже взяли эту книгу.</p>
     </#if>
 
     <#if books?size == 0>
@@ -26,11 +39,11 @@
                     </#if>
 
                     <p>Статус:
-                        <#if book.status == "AVAILABLE">
-                            Доступна
-                        <#else>
-                            Выдана
-                        </#if>
+                      <#if book.status?string == "AVAILABLE">
+                          Доступна
+                      <#else>
+                          Выдана
+                      </#if>
                     </p>
 
                     <p>
