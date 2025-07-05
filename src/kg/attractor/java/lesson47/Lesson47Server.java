@@ -1,7 +1,6 @@
 package kg.attractor.java.lesson47;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import kg.attractor.java.lesson44.SampleDataModel;
 import kg.attractor.java.lesson46.Lesson46Server;
 import kg.attractor.java.model.Book;
@@ -10,10 +9,7 @@ import kg.attractor.java.model.EmployeeAuth;
 import kg.attractor.java.server.Cookie;
 import kg.attractor.java.utils.Utils;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,10 +18,7 @@ public class Lesson47Server extends Lesson46Server {
     public Lesson47Server(String host, int port) throws IOException {
         super(host, port);
 
-        SampleDataModel.loadAuthEmployees();
-
-        employees.clear();
-        employees.addAll(SampleDataModel.getAuthEmployees());
+        SampleDataModel.reloadBooks();
 
         registerGet("/books",        this::booksPage);
         registerGet("/book",         this::showBook);
@@ -37,7 +30,6 @@ public class Lesson47Server extends Lesson46Server {
 
         registerPost("/login",       this::loginPost);
     }
-
 
     private void booksPage(HttpExchange ex) {
         SampleDataModel.reloadBooks();
@@ -61,6 +53,8 @@ public class Lesson47Server extends Lesson46Server {
         EmployeeAuth current = findUserBySession(ex);
         if (current == null) { redirect303(ex, "/login"); return; }
 
+        SampleDataModel.reloadBooks();
+
         List<Book> mine = SampleDataModel.getBooks().stream()
                 .filter(b -> current.getIssuedBookIds().contains(b.getId()))
                 .collect(Collectors.toList());
@@ -72,29 +66,18 @@ public class Lesson47Server extends Lesson46Server {
         EmployeeAuth current = findUserBySession(ex);
         if (current == null) { redirect303(ex, "/login"); return; }
 
-
         SampleDataModel.reloadBooks();
-
 
         List<String> userHistoryIds = current.getHistoryBookIds();
 
-
         List<Book> history = SampleDataModel.getBooks().stream()
-                .filter(b -> {
-                    boolean inHistory = userHistoryIds.contains(b.getId());
-                    return inHistory;
-                })
+                .filter(b -> userHistoryIds.contains(b.getId()))
                 .toList();
 
-
-
         renderTemplate(ex, "history.ftlh", Map.of("books", history));
-
     }
 
-
     private void showBook(HttpExchange ex) {
-
         EmployeeAuth current = findUserBySession(ex);
         if (current == null) {
             redirect303(ex, "/login");
@@ -127,9 +110,7 @@ public class Lesson47Server extends Lesson46Server {
         renderTemplate(ex, "book.ftlh", data);
     }
 
-
     private void takeBook(HttpExchange ex) {
-        SampleDataModel.loadAuthEmployees();
         EmployeeAuth u = findUserBySession(ex);
         if (u == null) { redirect303(ex, "/login"); return; }
 
@@ -169,14 +150,12 @@ public class Lesson47Server extends Lesson46Server {
             book.setStatus(BookStatus.AVAILABLE);
             book.setHolderEmail(null);
 
-
             SampleDataModel.saveAuthEmployees();
             SampleDataModel.saveBooksToJson();
         }
 
         redirect303(ex, "/book?id=" + id + "&returned=1");
     }
-
 
     @Override
     protected String getQueryParam(HttpExchange ex, String key) {
@@ -189,26 +168,47 @@ public class Lesson47Server extends Lesson46Server {
         renderTemplate(ex, "query.ftlh", Map.of("params", params));
     }
 
-
     @Override
     protected void loginPost(HttpExchange ex) {
         Map<String,String> form = parseFormData(body(ex));
         String email = form.get("email");
         String pass  = form.get("password");
 
-        EmployeeAuth user = employees.stream()
-                .filter(u -> u.getEmail().equalsIgnoreCase(email) &&
-                        u.getPassword().equals(pass))
+        System.out.println("--- Login Attempt ---");
+        System.out.println("Введенный email: " + email);
+        System.out.println("Введенный пароль: " + pass);
+
+        SampleDataModel.loadAuthEmployees();
+
+        System.out.println("Проверка загруженных пользователей из SampleDataModel:");
+        if (SampleDataModel.getAuthEmployees().isEmpty()) {
+            System.out.println("Список authEmployees пуст после loadAuthEmployees!");
+        } else {
+            SampleDataModel.getAuthEmployees().forEach(e -> {
+                System.out.println("  Загруженный из списка: " + e.getEmail() + " | " + e.getPassword());
+            });
+        }
+
+
+        EmployeeAuth user = SampleDataModel.getAuthEmployees().stream()
+                .filter(u -> {
+                    boolean emailMatch = u.getEmail().equalsIgnoreCase(email);
+                    boolean passwordMatch = u.getPassword().equals(pass);
+                    System.out.println("  Сравнение: Email (" + u.getEmail() + " == " + email + ") -> " + emailMatch +
+                            ", Пароль (" + u.getPassword() + " == " + pass + ") -> " + passwordMatch);
+                    return emailMatch && passwordMatch;
+                })
                 .findFirst()
                 .orElse(null);
 
         if (user == null) {
+            System.out.println("Пользователь не найден или пароль не совпадает. Перенаправление на /login?error=1");
             redirect303(ex, "/login?error=1"); return;
         }
 
-        currentUser = user;
+        System.out.println("Успешный вход пользователя: " + user.getEmail());
         String sid  = UUID.randomUUID().toString();
-        sessions.put(sid, user);
+        sessions.put(sid, user.getEmail());
 
         Cookie<String> c = Cookie.of("SID", sid)
                 .maxAge(600)
@@ -218,5 +218,4 @@ public class Lesson47Server extends Lesson46Server {
 
         redirect303(ex, "/books");
     }
-
 }

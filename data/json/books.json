@@ -14,7 +14,8 @@
     "author": "Joshua Bloch",
     "image": "effective_java.jpg",
     "description": "Коллекция лучших практик и советов по использованию Java от одного из ведущих разработчиков.",
-    "status": "AVAILABLE"
+    "status": "ISSUED",
+    "holderEmail": "tobokelovna1n@gmail.com"
   },
   {
     "id": "3",
