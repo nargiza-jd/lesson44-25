@@ -11,16 +11,15 @@ import java.util.*;
 
 public class Lesson46Server extends Lesson45Server {
 
-    private final Map<String, EmployeeAuth> sessions = new HashMap<>();
+    protected static final Map<String, String> sessions = new HashMap<>();
+
 
     public Lesson46Server(String host, int port) throws IOException {
         super(host, port);
 
-        registerPost("/login", this::loginPost);
 
         registerGet("/profile", this::profile46);
-        registerGet("/take",    this::takeBook);
-        registerGet("/return",  this::returnBook);
+
         registerGet("/logout",  this::logout);
     }
 
@@ -30,7 +29,9 @@ public class Lesson46Server extends Lesson45Server {
         String email = f.get("email");
         String pass = f.get("password");
 
-        EmployeeAuth user = employees.stream()
+        SampleDataModel.loadAuthEmployees();
+
+        EmployeeAuth user = SampleDataModel.getAuthEmployees().stream()
                 .filter(e -> e.getEmail().equalsIgnoreCase(email)
                         && e.getPassword().equals(pass))
                 .findFirst()
@@ -42,7 +43,8 @@ public class Lesson46Server extends Lesson45Server {
         }
 
         String sessionId = UUID.randomUUID().toString();
-        sessions.put(sessionId, user);
+
+        sessions.put(sessionId, user.getEmail());
 
         Cookie<String> sid = Cookie.of("SID", sessionId)
                 .maxAge(600)
@@ -51,7 +53,6 @@ public class Lesson46Server extends Lesson45Server {
 
         redirect303(ex, "/profile");
     }
-
 
     private void profile46(HttpExchange ex) {
         EmployeeAuth user = findUserBySession(ex);
@@ -63,44 +64,9 @@ public class Lesson46Server extends Lesson45Server {
         Map<String,Object> data = new HashMap<>();
         data.put("email",    user.getEmail());
         data.put("fullname", user.getFullName());
+        data.put("issuedCount", user.getIssuedBookIds().size());
+
         renderTemplate(ex, "profile.ftlh", data);
-    }
-
-    private void takeBook(HttpExchange ex) {
-        EmployeeAuth u = findUserBySession(ex);
-        if (u == null) { redirect303(ex, "/login"); return; }
-
-        String id   = getQueryParam(ex, "id");
-        Book  book  = SampleDataModel.getBookById(id);
-        if (book == null || book.getStatus() != BookStatus.AVAILABLE) {
-            redirect303(ex, "/books");
-            return;
-        }
-        if (u.getIssuedBookIds().size() >= 2) {
-            redirect303(ex, "/books?error=max2");
-            return;
-        }
-
-        u.getIssuedBookIds().add(book.getId());
-        book.setStatus(BookStatus.ISSUED);
-        book.setHolderEmail(u.getEmail());
-
-        redirect303(ex, "/books");
-    }
-
-    private void returnBook(HttpExchange ex) {
-        EmployeeAuth u = findUserBySession(ex);
-        if (u == null) { redirect303(ex, "/login"); return; }
-
-        String id  = getQueryParam(ex, "id");
-        Book  book = SampleDataModel.getBookById(id);
-        if (book == null) { redirect303(ex, "/books"); return; }
-
-        if (u.getIssuedBookIds().remove(book.getId())) {
-            book.setStatus(BookStatus.AVAILABLE);
-            book.setHolderEmail(null);
-        }
-        redirect303(ex, "/books");
     }
 
     private void logout(HttpExchange ex) {
@@ -115,13 +81,21 @@ public class Lesson46Server extends Lesson45Server {
         return Cookie.parse(getCookies(ex)).get("SID");
     }
 
-    private EmployeeAuth findUserBySession(HttpExchange ex) {
+    protected EmployeeAuth findUserBySession(HttpExchange ex) {
         String sid = readSessionId(ex);
-        return sid == null ? null : sessions.get(sid);
+        if (sid == null) return null;
+
+        String userEmail = sessions.get(sid);
+        if (userEmail == null) return null;
+
+        SampleDataModel.loadAuthEmployees();
+        return SampleDataModel.getAuthEmployees().stream()
+                .filter(u -> u.getEmail().equals(userEmail))
+                .findFirst()
+                .orElse(null);
     }
 
-
-    private String getQueryParam(HttpExchange ex, String key) {
+    protected String getQueryParam(HttpExchange ex, String key) {
         String q = ex.getRequestURI().getQuery();
         if (q == null) return null;
         for (String p : q.split("&")) {
@@ -129,5 +103,14 @@ public class Lesson46Server extends Lesson45Server {
             if (kv.length == 2 && kv[0].equals(key)) return kv[1];
         }
         return null;
+    }
+
+    protected String getQueryParams(HttpExchange exchange) {
+        String rawQuery = exchange.getRequestURI().getRawQuery();
+        return rawQuery == null ? "" : rawQuery;
+    }
+
+    protected String getCookies(HttpExchange ex) {
+        return Optional.ofNullable(ex.getRequestHeaders().getFirst("Cookie")).orElse("");
     }
 }

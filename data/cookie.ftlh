@@ -7,6 +7,8 @@
         name="viewport">
     <meta content="ie=edge" http-equiv="X-UA-Compatible">
     <title>Coockies Sample Page</title>
+    <link rel="stylesheet" href="/static/css/forms.css">
+    <link rel="stylesheet" href="/static/css/freemarker.css">
 </head>
 
 <body>

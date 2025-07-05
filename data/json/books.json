@@ -4,50 +4,52 @@
     "title": "Clean Code",
     "author": "Robert Martin",
     "image": "clean_code.jpg",
-    "status": "AVAILABLE",
-    "issuedTo": null
+    "description": "Практическое руководство по написанию читаемого, поддерживаемого и чистого кода на Java.",
+    "status": "ISSUED",
+    "holderEmail": "tobokelovna1n@gmail.com"
   },
   {
     "id": "2",
     "title": "Effective Java",
     "author": "Joshua Bloch",
     "image": "effective_java.jpg",
+    "description": "Коллекция лучших практик и советов по использованию Java от одного из ведущих разработчиков.",
     "status": "ISSUED",
-    "issuedTo": "1"
+    "holderEmail": "tobokelovna1n@gmail.com"
   },
   {
     "id": "3",
     "title": "Java Concurrency in Practice",
     "author": "Brian Goetz",
     "image": "concurrency.jpg",
+    "description": "Глубокое изучение многопоточности и потокобезопасности в Java.",
     "status": "AVAILABLE",
-    "issuedTo": null
+    "holderEmail": ""
   },
   {
     "id": "4",
     "title": "Head First Java",
     "author": "Kathy Sierra",
     "image": "head_first.jpg",
+    "description": "Лёгкое и визуальное введение в Java для начинающих программистов.",
     "status": "ISSUED",
-    "issuedTo": "2"
+    "holderEmail": "qwe@qwe.qwe"
   },
   {
     "id": "5",
     "title": "Spring in Action",
     "author": "Craig Walls",
     "image": "spring_in_action.jpg",
-    "status": "AVAILABLE",
-    "issuedTo": null
+    "description": "Руководство по разработке приложений с использованием Spring Framework.",
+    "status": "AVAILABLE"
   },
   {
     "id": "6",
     "title": "Java: The Complete Reference",
     "author": "Herbert Schildt",
     "image": "reference.jpg",
+    "description": "Полное руководство по Java — от основ до продвинутых тем.",
     "status": "AVAILABLE",
-    "issuedTo": null
+    "holderEmail": ""
   }
 ]
-
-
-

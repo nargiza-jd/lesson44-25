@@ -77,7 +77,7 @@ public class Lesson45Server extends Lesson44Server {
     }
 
     private void registerPost(HttpExchange ex) {
-        Map<String,String> f = parseFormData(body(ex));
+        Map<String, String> f = parseFormData(body(ex));
         String email    = f.get("email");
         String pass     = f.get("password");
         String fullname = f.get("fullname");
@@ -86,7 +86,11 @@ public class Lesson45Server extends Lesson44Server {
             redirect303(ex, "/register?error=1");
             return;
         }
-        employees.add(new EmployeeAuth(email, fullname, pass));
+
+        String id = UUID.randomUUID().toString();
+
+        employees.add(new EmployeeAuth(id, email, pass, fullname));
+
         saveUsersToFile();
         redirect303(ex, "/login?register=success");
     }
@@ -173,7 +177,9 @@ public class Lesson45Server extends Lesson44Server {
     }
 
     private void addTestUserIfAbsent(String email, String pw, String fn) {
-        if (employees.stream().noneMatch(u -> u.getEmail().equalsIgnoreCase(email)))
-            employees.add(new EmployeeAuth(email, fn, pw));
+        if (employees.stream().noneMatch(u -> u.getEmail().equalsIgnoreCase(email))) {
+            String id = UUID.randomUUID().toString();
+            employees.add(new EmployeeAuth(id, email, pw, fn));
+        }
     }
 }
