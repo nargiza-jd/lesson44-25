@@ -13,7 +13,7 @@
 
         <div class="book-details">
             <div class="book-cover-container">
-                <img src="/static/images/${book.image}" alt="Обложка книги: ${book.title}" class="book-cover">
+                <img src="/static/images/${book.image!''}" alt="Обложка книги: ${book.title!''}" class="book-cover">
             </div>
             <div class="book-info">
                 <p><strong>Автор:</strong> ${book.author}</p>

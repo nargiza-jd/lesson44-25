@@ -50,10 +50,10 @@ public abstract class BasicServer {
     private void dispatch(HttpExchange ex) throws IOException {
         String path = ex.getRequestURI().getPath();
 
-        if (path.startsWith("/static/")) {
-
-            return;
-        }
+//        if (path.startsWith("/static/")) {
+//
+//            return;
+//        }
 
         if (path.equals("")) path = "/";
         String key = ex.getRequestMethod().toUpperCase() + " " + path;
@@ -143,7 +143,6 @@ public abstract class BasicServer {
                     Files.copy(file.toPath(), os);
                 }
             } else {
-                System.err.println("Static file not found or is a directory: " + file.getAbsolutePath());
                 exchange.sendResponseHeaders(404, -1);
             }
         }

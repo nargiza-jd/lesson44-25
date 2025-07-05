@@ -5,6 +5,7 @@
     <title>Список книг</title>
     <link rel="stylesheet" href="/static/css/forms.css">
     <link rel="stylesheet" href="/static/css/freemarker.css">
+    <link rel="stylesheet" href="/static/css/book-details.css">
 </head>
 <body>
 <main>

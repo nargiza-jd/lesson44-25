@@ -25,16 +25,15 @@ public class SampleDataModel {
     public static void reloadBooks() {
         books.clear();
         books.addAll(loadBooks());
+
     }
 
     private static List<Book> loadBooks() {
         try (Reader r = Files.newBufferedReader(BOOKS_FILE_PATH)) {
             Type t = new TypeToken<List<Book>>() {}.getType();
             List<Book> list = new Gson().fromJson(r, t);
-            System.out.println("Книги загружены. Количество: " + (list == null ? 0 : list.size()));
             return list == null ? new ArrayList<>() : list;
         } catch (IOException e) {
-            System.err.println("Ошибка при загрузке книг из " + BOOKS_FILE_PATH + ": " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -49,14 +48,11 @@ public class SampleDataModel {
     }
 
     public static void saveBooksToJson() {
-        System.out.println("Попытка сохранения книг в JSON");
         try (Writer writer = Files.newBufferedWriter(BOOKS_FILE_PATH)) {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             gson.toJson(books, writer);
-            System.out.println("Книги успешно сохранены в JSON.");
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("Ошибка при сохранении книг в JSON: " + e.getMessage());
         }
     }
 
@@ -68,10 +64,8 @@ public class SampleDataModel {
         try (Reader r = Files.newBufferedReader(EMPLOYEES_FILE_PATH)) {
             Type t = new TypeToken<List<Employee>>() {}.getType();
             List<Employee> list = new Gson().fromJson(r, t);
-            System.out.println("Сотрудники (старые) загружены. Количество: " + (list == null ? 0 : list.size()));
             return list == null ? new ArrayList<>() : list;
         } catch (IOException e) {
-            System.err.println("Ошибка при загрузке сотрудников (старых) из " + EMPLOYEES_FILE_PATH + ": " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -98,10 +92,8 @@ public class SampleDataModel {
     public static void loadAuthEmployees() {
         try {
             Path authFilePath = Path.of("data", "json", "auth.json");
-            System.out.println("Attempting to load auth data from: " + authFilePath.toAbsolutePath());
 
             String json = Files.readString(authFilePath);
-            System.out.println("Read JSON content: " + json.substring(0, Math.min(json.length(), 200)) + "...");
 
             Type type = new TypeToken<List<EmployeeAuth>>() {}.getType();
             List<EmployeeAuth> loadedAuthEmployees = GSON.fromJson(json, type);
@@ -111,15 +103,12 @@ public class SampleDataModel {
                 authEmployees.addAll(loadedAuthEmployees);
             }
 
-            System.out.println("Авторизационные данные сотрудников загружены. Количество: " + authEmployees.size());
             authEmployees.forEach(e -> System.out.println("Загруженный пользователь (из loadAuthEmployees): " + e.getEmail() + " | " + e.getPassword()));
 
         } catch (IOException e) {
-            System.err.println("Ошибка при загрузке авторизационных данных из " + AUTH_FILE_PATH + ": " + e.getMessage());
             e.printStackTrace();
             authEmployees = new ArrayList<>();
         } catch (JsonSyntaxException e) {
-            System.err.println("Ошибка парсинга JSON в " + AUTH_FILE_PATH + ": " + e.getMessage());
             e.printStackTrace();
             authEmployees = new ArrayList<>();
         }
@@ -129,9 +118,7 @@ public class SampleDataModel {
     public static void saveAuthEmployees() {
         try (Writer w = Files.newBufferedWriter(AUTH_FILE_PATH)) {
             GSON.toJson(authEmployees, w);
-            System.out.println("Авторизационные данные сотрудников сохранены.");
         } catch (IOException e) {
-            System.err.println("Ошибка при сохранении авторизационных данных в " + AUTH_FILE_PATH + ": " + e.getMessage());
             e.printStackTrace();
         }
     }

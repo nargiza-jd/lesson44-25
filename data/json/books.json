@@ -23,7 +23,8 @@
     "author": "Brian Goetz",
     "image": "concurrency.jpg",
     "description": "Глубокое изучение многопоточности и потокобезопасности в Java.",
-    "status": "AVAILABLE"
+    "status": "AVAILABLE",
+    "holderEmail": ""
   },
   {
     "id": "4",
@@ -31,7 +32,8 @@
     "author": "Kathy Sierra",
     "image": "head_first.jpg",
     "description": "Лёгкое и визуальное введение в Java для начинающих программистов.",
-    "status": "AVAILABLE"
+    "status": "ISSUED",
+    "holderEmail": "qwe@qwe.qwe"
   },
   {
     "id": "5",
@@ -47,7 +49,7 @@
     "author": "Herbert Schildt",
     "image": "reference.jpg",
     "description": "Полное руководство по Java — от основ до продвинутых тем.",
-    "status": "ISSUED",
-    "holderEmail": "qwe@qwe.qwe"
+    "status": "AVAILABLE",
+    "holderEmail": ""
   }
 ]

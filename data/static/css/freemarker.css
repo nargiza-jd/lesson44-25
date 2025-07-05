@@ -1,27 +1,27 @@
 html,
 body {
-  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
 
 p {
-  padding-left: 15px;
+    padding-left: 15px;
 }
 
 div p:last-child {
-  padding-bottom: 20px;
+    padding-bottom: 20px;
 }
 
 .container {
- width: 800px;
- margin: 0 auto;
+    width: 800px;
+    margin: 0 auto;
 }
 
 .flex {
-  display: flex;
+    display: flex;
 }
 
 .flex-col {
-  flex-direction: column;
+    flex-direction: column;
 }
 
 .column {
@@ -29,10 +29,10 @@ div p:last-child {
 }
 
 .column:first-child {
+    flex-basis: 20%;
     padding-left: 5px;
 }
 
-.column:first-child,
 .column:last-child {
     flex-basis: 20%;
 }
@@ -43,13 +43,79 @@ div p:last-child {
     border-bottom: 1px solid black;
 }
 
-li.row {
-}
-
+li.row,
 .row {
-  padding: 5px 0;
+    padding: 5px 0;
 }
 
 .even {
- background: #eee;
+    background: #eee;
+}
+
+.book-list ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.book-list li {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.book-list li h3 {
+    margin: 0 0 10px;
+    font-size: 1.3em;
+}
+
+.book-list li p {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+.book-list li img {
+    max-width: 120px;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.book-list li a {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+}
+
+.book-list li a:hover {
+    background-color: #0056b3;
+    text-decoration: none;
+}
+
+.book-list li p strong {
+    font-weight: normal;
+}
+
+.book-status-available {
+    color: green;
+    font-weight: bold;
+}
+
+.book-status-issued {
+    color: orange;
+    font-weight: bold;
 }
